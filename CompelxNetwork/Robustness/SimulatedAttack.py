@@ -11,21 +11,31 @@ def ConnectivityRobustness(graph, attack='node', strategy='degree'):
     N = G.number_of_nodes()
     attack_sequence = Attack(G, attack=attack, strategy=strategy)
 
-    largest_cc = max(nx.connected_components(G), key=len)
+    is_directed = nx.is_directed(G)
+    if not is_directed:
+        largest_cc = max(nx.connected_components(G), key=len)
+    else:
+        largest_cc = max(nx.weakly_connected_components(G), key=len)
     r_0 = len(largest_cc) / N
     robustness_curve = [r_0]
 
     for i, target in enumerate(attack_sequence):
         if attack == 'node':
             G.remove_node(target)
-            largest_cc = max(nx.connected_components(G), key=len)
+            if not is_directed:
+                largest_cc = max(nx.connected_components(G), key=len)
+            else:
+                largest_cc = max(nx.weakly_connected_components(G), key=len)
             r_i = len(largest_cc) / (N - i - 1)
 
             # another calculation method:
             # r_i = len(largest_cc) / N
         elif attack == 'edge':
             G.remove_edge(*target)
-            largest_cc = max(nx.connected_components(G), key=len)
+            if not is_directed:
+                largest_cc = max(nx.connected_components(G), key=len)
+            else:
+                largest_cc = max(nx.weakly_connected_components(G), key=len)
             r_i = len(largest_cc) / N
         else:
             raise AttributeError(f'Attack : {attack}, NOT Implemented.')
@@ -59,11 +69,45 @@ def ControllabilityRobustness(graph, attack='node', strategy='degree'):
     return robustness_curve, np.mean(robustness_curve)
 
 
-# todo: CommunicabilityRobustness
 def CommunicabilityRobustness(graph, attack='node', strategy='degree'):
-    pass
+    G = deepcopy(graph)
+    N = G.number_of_nodes()
+    attack_sequence = Attack(G, attack=attack, strategy=strategy)
 
+    is_directed = nx.is_directed(G)
+    if not is_directed:
+        connected_components = nx.connected_components(G)
+        len_connected_components = np.array([len(i) for i in connected_components])
+    else:
+        connected_components = nx.weakly_connected_components(G)
+        len_connected_components = [len(i) for i in connected_components]
+    r_0 = np.sum(len_connected_components * len_connected_components) / (N * N)
+    robustness_curve = [r_0]
 
-g = nx.barabasi_albert_graph(100, 4)
-g1 = nx.DiGraph(nx.to_directed(g))
-print(ControllabilityRobustness(g1, attack='node', strategy='degree'))
+    for i, target in enumerate(attack_sequence):
+        if attack == 'node':
+            G.remove_node(target)
+            if not is_directed:
+                connected_components = nx.connected_components(G)
+                len_connected_components = np.array([len(i) for i in connected_components])
+            else:
+                connected_components = nx.weakly_connected_components(G)
+                len_connected_components = [len(i) for i in connected_components]
+            r_i = np.sum(len_connected_components * len_connected_components) / (N * N)
+
+            # another calculation method:
+            # r_i = len(largest_cc) / N
+        elif attack == 'edge':
+            G.remove_edge(*target)
+            if not is_directed:
+                connected_components = nx.connected_components(G)
+                len_connected_components = np.array([len(i) for i in connected_components])
+            else:
+                connected_components = nx.weakly_connected_components(G)
+                len_connected_components = [len(i) for i in connected_components]
+            r_i = np.sum(len_connected_components * len_connected_components) / (N * N)
+        else:
+            raise AttributeError(f'Attack : {attack}, NOT Implemented.')
+        robustness_curve.append(r_i)
+
+    return robustness_curve, np.mean(robustness_curve)
