@@ -2,7 +2,7 @@ import random
 from copy import deepcopy
 
 
-def Make_crossover(ind1, ind2):
+def make_crossover(ind1, ind2, p_cross):
     g1 = deepcopy(ind1.g)
     g2 = deepcopy(ind2.g)
     N = g1.number_of_nodes()

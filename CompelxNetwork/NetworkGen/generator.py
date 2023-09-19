@@ -4,7 +4,7 @@ import networkx as nx
 import numpy as np
 
 
-def ErdosRenyiGraph(num_nodes, num_edges, is_directed=False, is_weighted=False):
+def erdos_renyi_graph(num_nodes, num_edges, is_directed=False, is_weighted=False):
     if is_directed:
         G = nx.DiGraph()
     else:
@@ -33,7 +33,7 @@ def ErdosRenyiGraph(num_nodes, num_edges, is_directed=False, is_weighted=False):
     return G
 
 
-def BarabasiAlbertGraph(num_nodes, num_edges, is_directed=False, is_weighted=False):
+def barabasi_albert_graph(num_nodes, num_edges, is_directed=False, is_weighted=False):
     # calculate parameters
     n0 = int(np.ceil(num_edges / num_nodes) + 1)  # initial nodes
     n_add = num_nodes - n0  # rest nodes are added later on

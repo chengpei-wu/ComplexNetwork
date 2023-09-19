@@ -3,15 +3,20 @@ from copy import deepcopy
 
 import networkx as nx
 
-from EA.individual import Individual
-from EA.utils import Make_crossover
-from configuration import *
+from CompelxNetwork.RobustnessOptimization.GA.individual import Individual
+from CompelxNetwork.RobustnessOptimization.GA.utils import make_crossover
 
 
 class Population:
-    def __init__(self, max_size: int, init_graph: nx.Graph, init_size: int):
+    def __init__(
+            self, max_size: int, init_graph: nx.Graph, init_size: int,
+            MaxRewire, p_cross, p_mutate
+    ):
         self.max_size = max_size
         self.init_size = init_size
+        self.MaxRewire = MaxRewire
+        self.p_cross = p_cross
+        self.p_mutate = p_mutate
         self.pop_size = 0
         self.generation = 1
         self.individuals = []
@@ -20,7 +25,7 @@ class Population:
     def initial(self, init_graph: nx.Graph, init_size: int):
         for size in range(init_size):
             G = deepcopy(init_graph)
-            rewireNum = random.randint(2, MaxRewire)
+            rewireNum = random.randint(2, self.MaxRewire)
             G = nx.double_edge_swap(G, nswap=rewireNum)
             self.add_individual(Individual(G))
 
@@ -42,23 +47,23 @@ class Population:
             for i in range(self.pop_size, self.max_size):
                 c_idx = random.randint(0, self.pop_size - 1)
                 G_t = deepcopy(self.individuals[c_idx].g)
-                rewireNum = random.randint(2, MaxRewire)
+                rewireNum = random.randint(2, self.MaxRewire)
                 G_t = nx.double_edge_swap(G_t, nswap=rewireNum)
                 self.add_individual(Individual(G_t))
 
         for idx in range(self.pop_size):
-            if random.random() < p_cross:
+            if random.random() < self.p_cross:
                 c_idx = random.randint(0, self.pop_size - 1)
                 while c_idx == idx:
                     c_idx = random.randint(0, self.pop_size - 1)
-                G = Make_crossover(self.individuals[c_idx], self.individuals[idx])
+                G = make_crossover(self.individuals[c_idx], self.individuals[idx], self.p_cross)
                 self.replace_individual(Individual(G), c_idx)
 
     def mutate(self, graph_ori):
         for i in range(self.pop_size):
-            if random.random() <= p_mutate:
+            if random.random() <= self.p_mutate:
                 G_t = deepcopy(self.individuals[i].g)
-                rewireNum = random.randint(2, MaxRewire)
+                rewireNum = random.randint(2, self.MaxRewire)
                 # for j in range(MaxAdd):
                 #     random_nodes = random.sample(G_t.nodes(), 2)
                 #     new_edge = tuple(random_nodes)

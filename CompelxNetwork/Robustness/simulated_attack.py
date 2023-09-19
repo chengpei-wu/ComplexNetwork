@@ -3,13 +3,13 @@ from copy import deepcopy
 import networkx as nx
 import numpy as np
 
-from Attack import Attack
+from network_attack import network_attack
 
 
-def ConnectivityRobustness(graph, attack='node', strategy='degree'):
+def connectivity_robustness(graph, attack='node', strategy='degree'):
     G = deepcopy(graph)
     N = G.number_of_nodes()
-    attack_sequence = Attack(G, attack=attack, strategy=strategy)
+    attack_sequence = network_attack(G, attack=attack, strategy=strategy)
 
     is_directed = nx.is_directed(G)
     if not is_directed:
@@ -44,10 +44,10 @@ def ConnectivityRobustness(graph, attack='node', strategy='degree'):
     return robustness_curve, np.mean(robustness_curve)
 
 
-def ControllabilityRobustness(graph, attack='node', strategy='degree'):
+def controllability_robustness(graph, attack='node', strategy='degree'):
     G = deepcopy(graph)
     N = G.number_of_nodes()
-    attack_sequence = Attack(G, attack=attack, strategy=strategy)
+    attack_sequence = network_attack(G, attack=attack, strategy=strategy)
 
     rank_adj = np.linalg.matrix_rank(nx.to_numpy_matrix(G))
     r_0 = max(1, N - rank_adj) / N
@@ -69,10 +69,10 @@ def ControllabilityRobustness(graph, attack='node', strategy='degree'):
     return robustness_curve, np.mean(robustness_curve)
 
 
-def CommunicabilityRobustness(graph, attack='node', strategy='degree'):
+def communicability_robustness(graph, attack='node', strategy='degree'):
     G = deepcopy(graph)
     N = G.number_of_nodes()
-    attack_sequence = Attack(G, attack=attack, strategy=strategy)
+    attack_sequence = network_attack(G, attack=attack, strategy=strategy)
 
     is_directed = nx.is_directed(G)
     if not is_directed:

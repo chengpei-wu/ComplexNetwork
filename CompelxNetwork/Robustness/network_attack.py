@@ -4,16 +4,16 @@ from copy import deepcopy
 import networkx as nx
 
 
-def Attack(graph, attack='node', strategy='degree'):
+def network_attack(graph, attack='node', strategy='degree'):
     if attack == 'node':
-        return NodeAttack(graph, strategy=strategy)
+        return node_attack(graph, strategy=strategy)
     elif attack == 'edge':
-        return EdgeAttack(graph, strategy=strategy)
+        return edge_attack(graph, strategy=strategy)
     else:
         raise AttributeError(f'Attack : {attack}, NOT Implemented.')
 
 
-def NodeAttack(graph, strategy='degree'):
+def node_attack(graph, strategy='degree'):
     sequence = []
     G = deepcopy(graph)
     N = G.number_of_nodes()
@@ -33,7 +33,7 @@ def NodeAttack(graph, strategy='degree'):
     return sequence
 
 
-def EdgeAttack(graph, strategy='random'):
+def edge_attack(graph, strategy='random'):
     sequence = []
     G = deepcopy(graph)
     M = G.number_of_edges()
