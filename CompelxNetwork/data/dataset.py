@@ -12,7 +12,7 @@ from CompelxNetwork.utils.tool_function import print_progress
 
 def create_network_instances(topology_type: str, is_directed: bool, is_weighted: bool, num_instance: int,
                              network_size: Union[int, tuple],
-                             average_degree: Union[float, tuple]) -> list:
+                             average_degree: Union[float, int, tuple]) -> list:
     networks = []
 
     for i in range(num_instance):
@@ -56,7 +56,7 @@ def create_network_instances(topology_type: str, is_directed: bool, is_weighted:
 def create_network_dataset(topology_types: List[str], is_directed: bool, is_weighted: bool,
                            num_instance: int,
                            network_size: Union[int, tuple],
-                           average_degree: Union[float, tuple],
+                           average_degree: Union[float, int, tuple],
                            **kwargs
                            ):
     dgl_graghs = []
@@ -74,12 +74,14 @@ def create_network_dataset(topology_types: List[str], is_directed: bool, is_weig
             network_size=network_size,
             average_degree=average_degree
         )
-        for network_instance in network_instances:
+        for i, network_instance in enumerate(network_instances):
             dgl_graph = dgl.from_networkx(network_instance)
             dgl_graghs.append(dgl_graph)
             graph_labels.append(topology_type)
             save_robustness = kwargs.get('save_robustness', None)
             if save_robustness:
+                print_progress(now=i, total=num_instance,
+                               prefix=f'calculating robustness of {topology_type.upper()} networks: ')
                 for r in save_robustness:
                     if r == 'connectivity':
                         curve, _ = connectivity_robustness(
@@ -104,16 +106,16 @@ def create_network_dataset(topology_types: List[str], is_directed: bool, is_weig
                         communicability_curves.append(curve)
                     else:
                         raise NotImplementedError(f'{r} not implemented')
-    if kwargs.get('save_robustness', None):
-        return {
-            'graphs': dgl_graghs,
-            'labels': graph_labels,
-            'connectivity_curves': connectivity_curves,
-            'controllability_curves': controllability_curves,
-            'communicability_curves': communicability_curves
-        }
-    else:
-        return {
-            'graphs': dgl_graghs,
-            'labels': graph_labels,
-        }
+    res = {
+        'graphs': dgl_graghs,
+        'labels': graph_labels,
+    }
+
+    if 'connectivity' in kwargs.get('save_robustness', None):
+        res['connectivity_curves'] = connectivity_curves
+    if 'controllability' in kwargs.get('save_robustness', None):
+        res['controllability_curves'] = controllability_curves
+    if 'communicability' in kwargs.get('save_robustness', None):
+        res['communicability_curves'] = communicability_curves
+
+    return res
