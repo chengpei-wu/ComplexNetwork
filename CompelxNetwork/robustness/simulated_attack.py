@@ -1,15 +1,15 @@
 from copy import deepcopy
-from typing import Tuple
+from typing import Tuple, List
 from typing import Union
 
 import networkx as nx
 import numpy as np
 
-from CompelxNetwork.robustness import network_attack
+from CompelxNetwork.robustness.network_attack import network_attack
 
 
 def connectivity_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> \
-        Tuple[list[float], np.ndarray]:
+        Tuple[List[float], np.ndarray]:
     G = deepcopy(graph)
     N = G.number_of_nodes()
     attack_sequence = network_attack(G, attack=attack, strategy=strategy)
@@ -48,7 +48,7 @@ def connectivity_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'n
 
 
 def controllability_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> \
-        Tuple[list[float], np.ndarray]:
+        Tuple[List[float], np.ndarray]:
     G = deepcopy(graph)
     N = G.number_of_nodes()
     attack_sequence = network_attack(G, attack=attack, strategy=strategy)
@@ -74,7 +74,7 @@ def controllability_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str =
 
 
 def communicability_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> \
-        Tuple[list[float], np.ndarray]:
+        Tuple[List[float], np.ndarray]:
     G = deepcopy(graph)
     N = G.number_of_nodes()
     attack_sequence = network_attack(G, attack=attack, strategy=strategy)
