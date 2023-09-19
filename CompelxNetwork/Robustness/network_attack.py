@@ -6,6 +6,19 @@ import networkx as nx
 
 
 def network_attack(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> list:
+    """
+    network attack, under a certain network attack strategy.
+
+    Parameters
+    ----------
+    graph : the graph to be attacked
+    attack : node or edge attacks
+    strategy : the strategy of choosing targets under attacks
+
+    Returns
+    -------
+    the attack sequence of nodes and edges
+    """
     if attack == 'node':
         return node_attack(graph, strategy=strategy)
     elif attack == 'edge':
@@ -15,6 +28,18 @@ def network_attack(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', str
 
 
 def node_attack(graph: Union[nx.Graph, nx.DiGraph], strategy: str = 'degree') -> list:
+    """
+        node attacks, under a certain strategy.
+
+        Parameters
+        ----------
+        graph : the graph to be attacked
+        strategy : the strategy of choosing targets under node removals
+
+        Returns
+        -------
+        the attack sequence of nodes
+    """
     sequence = []
     G = deepcopy(graph)
     N = G.number_of_nodes()
@@ -35,6 +60,18 @@ def node_attack(graph: Union[nx.Graph, nx.DiGraph], strategy: str = 'degree') ->
 
 
 def edge_attack(graph: Union[nx.Graph, nx.DiGraph], strategy: str = 'random') -> list:
+    """
+            edge attacks, under a certain strategy.
+
+            Parameters
+            ----------
+            graph : the graph to be attacked
+            strategy : the strategy of choosing targets under edge removals
+
+            Returns
+            -------
+            the attack sequence of edges
+    """
     sequence = []
     G = deepcopy(graph)
     M = G.number_of_edges()

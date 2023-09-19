@@ -7,6 +7,25 @@ import numpy as np
 
 def erdos_renyi_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> Union[
     nx.Graph, nx.DiGraph]:
+    """
+    return Erdos Renyi (ER) graph.
+
+    Parameters
+    ----------
+    num_nodes : number of nodes
+    num_edges : number of edges
+    is_directed : return directed graph
+    is_weighted : return graph with random edge weight
+
+    Returns
+    -------
+    nx.Graph or nx.DiGraph
+
+    References
+    ----------
+    .. [1] P. Erdos and A. Renyi, "On the strength of connectedness of a random
+        graph," Acta Mathematica Hungarica, vol. 12, no. 1-2, pp. 261–267, 1964.
+    """
     if is_directed:
         G = nx.DiGraph()
     else:
@@ -38,6 +57,25 @@ def erdos_renyi_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
 def barabasi_albert_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
+    """
+        return Barabasi Albert (BA) graph.
+
+        Parameters
+        ----------
+        num_nodes : number of nodes
+        num_edges : number of edges
+        is_directed : return directed graph
+        is_weighted : return graph with random edge weight
+
+        Returns
+        -------
+        nx.Graph or nx.DiGraph
+
+        References
+        ----------
+        .. [1] A. L. Barabási and R. Albert "Emergence of scaling in
+            random networks", Science 286, pp 509-512, 1999.
+        """
     # calculate parameters
     n0 = int(np.ceil(num_edges / num_nodes) + 1)  # initial nodes
     n_add = num_nodes - n0  # rest nodes are added later on
