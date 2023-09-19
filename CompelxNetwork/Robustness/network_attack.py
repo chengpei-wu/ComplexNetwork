@@ -1,10 +1,11 @@
 import random
 from copy import deepcopy
+from typing import Union
 
 import networkx as nx
 
 
-def network_attack(graph, attack='node', strategy='degree'):
+def network_attack(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> list:
     if attack == 'node':
         return node_attack(graph, strategy=strategy)
     elif attack == 'edge':
@@ -13,7 +14,7 @@ def network_attack(graph, attack='node', strategy='degree'):
         raise AttributeError(f'Attack : {attack}, NOT Implemented.')
 
 
-def node_attack(graph, strategy='degree'):
+def node_attack(graph: Union[nx.Graph, nx.DiGraph], strategy: str = 'degree') -> list:
     sequence = []
     G = deepcopy(graph)
     N = G.number_of_nodes()
@@ -33,7 +34,7 @@ def node_attack(graph, strategy='degree'):
     return sequence
 
 
-def edge_attack(graph, strategy='random'):
+def edge_attack(graph: Union[nx.Graph, nx.DiGraph], strategy: str = 'random') -> list:
     sequence = []
     G = deepcopy(graph)
     M = G.number_of_edges()

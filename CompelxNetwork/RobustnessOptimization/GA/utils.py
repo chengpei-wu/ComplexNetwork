@@ -1,14 +1,19 @@
 import random
 from copy import deepcopy
+from typing import Union
+
+import networkx as nx
+
+from CompelxNetwork.RobustnessOptimization.GA.individual import Individual
 
 
-def make_crossover(ind1, ind2, p_cross):
+def make_crossover(ind1: Individual, ind2: Individual, p_cross: float) -> Union[nx.Graph, nx.DiGraph]:
     g1 = deepcopy(ind1.g)
     g2 = deepcopy(ind2.g)
     N = g1.number_of_nodes()
     deg_ori = []
     for i in range(N):
-        deg_ori.append(g1.degree(i))
+        deg_ori.append(g1.degree[i])
     for lab in range(N):
         cross_flag = 1
         if random.random() <= p_cross:
@@ -39,7 +44,7 @@ def make_crossover(ind1, ind2, p_cross):
             g1.remove_edge(node_1, node3in1[0])
             g1.add_edge(node_2, node3in1[0])
             for i in range(N):
-                if deg_ori[i] != g1.degree(i):
+                if deg_ori[i] != g1.degree[i]:
                     cross_flag = 0
             if cross_flag == 0:
                 g1 = deepcopy(ind1.g)
@@ -53,7 +58,7 @@ def make_crossover(ind1, ind2, p_cross):
                 continue
             g2.add_edge(node_1, node3in2[0])
             for i in range(N):
-                if deg_ori[i] != g2.degree(i):
+                if deg_ori[i] != g2.degree[i]:
                     cross_flag = 0
             if cross_flag == 0:
                 g2 = deepcopy(ind2.g)

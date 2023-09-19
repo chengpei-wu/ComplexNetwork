@@ -1,5 +1,6 @@
 import random
 from copy import deepcopy
+from typing import Union
 
 import networkx as nx
 
@@ -9,12 +10,12 @@ from CompelxNetwork.RobustnessOptimization.GA.utils import make_crossover
 
 class Population:
     def __init__(
-            self, max_size: int, init_graph: nx.Graph, init_size: int,
-            MaxRewire, p_cross, p_mutate
+            self, max_size: int, init_graph: Union[nx.Graph, nx.DiGraph], init_size: int,
+            max_rewire: int, p_cross: float, p_mutate: float
     ):
         self.max_size = max_size
         self.init_size = init_size
-        self.MaxRewire = MaxRewire
+        self.MaxRewire = max_rewire
         self.p_cross = p_cross
         self.p_mutate = p_mutate
         self.pop_size = 0
@@ -22,7 +23,7 @@ class Population:
         self.individuals = []
         self.initial(init_graph, init_size)
 
-    def initial(self, init_graph: nx.Graph, init_size: int):
+    def initial(self, init_graph: Union[nx.Graph, nx.DiGraph], init_size: int):
         for size in range(init_size):
             G = deepcopy(init_graph)
             rewireNum = random.randint(2, self.MaxRewire)
@@ -59,7 +60,7 @@ class Population:
                 G = make_crossover(self.individuals[c_idx], self.individuals[idx], self.p_cross)
                 self.replace_individual(Individual(G), c_idx)
 
-    def mutate(self, graph_ori):
+    def mutate(self, graph_ori: Union[nx.Graph, nx.DiGraph]):
         for i in range(self.pop_size):
             if random.random() <= self.p_mutate:
                 G_t = deepcopy(self.individuals[i].g)
@@ -79,7 +80,7 @@ class Population:
             # self.individuals[i].EMD = self.individuals[i].cal_EMD(graph_ori)
             self.individuals[i].fitness = self.individuals[i].R
 
-    def find_best(self):
+    def find_best(self) -> Individual:
         index = 0
         for i in range(1, self.pop_size):
             if self.individuals[i].fitness > self.individuals[index].fitness:

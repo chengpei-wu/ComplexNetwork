@@ -1,10 +1,12 @@
 import random
+from typing import Union
 
 import networkx as nx
 import numpy as np
 
 
-def erdos_renyi_graph(num_nodes, num_edges, is_directed=False, is_weighted=False):
+def erdos_renyi_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> Union[
+    nx.Graph, nx.DiGraph]:
     if is_directed:
         G = nx.DiGraph()
     else:
@@ -33,7 +35,9 @@ def erdos_renyi_graph(num_nodes, num_edges, is_directed=False, is_weighted=False
     return G
 
 
-def barabasi_albert_graph(num_nodes, num_edges, is_directed=False, is_weighted=False):
+def barabasi_albert_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
+        Union[
+            nx.Graph, nx.DiGraph]:
     # calculate parameters
     n0 = int(np.ceil(num_edges / num_nodes) + 1)  # initial nodes
     n_add = num_nodes - n0  # rest nodes are added later on
