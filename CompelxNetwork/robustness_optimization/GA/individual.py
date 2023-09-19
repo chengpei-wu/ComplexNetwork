@@ -3,7 +3,7 @@ from typing import Union
 import networkx as nx
 import numpy as np
 
-from CompelxNetwork.Robustness.simulated_attack import connectivity_robustness, controllability_robustness, \
+from CompelxNetwork.robustness.simulated_attack import connectivity_robustness, controllability_robustness, \
     communicability_robustness
 from CompelxNetwork.utils.distance_calculation import calculate_EMD
 

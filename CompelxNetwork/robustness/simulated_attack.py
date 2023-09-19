@@ -5,7 +5,7 @@ from typing import Union
 import networkx as nx
 import numpy as np
 
-from CompelxNetwork.Robustness import network_attack
+from CompelxNetwork.robustness import network_attack
 
 
 def connectivity_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> \

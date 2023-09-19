@@ -4,7 +4,7 @@ from typing import Union
 
 import networkx as nx
 
-from CompelxNetwork.RobustnessOptimization.GA.individual import Individual
+from CompelxNetwork.robustness_optimization.GA.individual import Individual
 
 
 def make_crossover(ind1: Individual, ind2: Individual, p_cross: float) -> Union[nx.Graph, nx.DiGraph]:
