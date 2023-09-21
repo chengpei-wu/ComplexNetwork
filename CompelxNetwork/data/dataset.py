@@ -1,8 +1,7 @@
+import pickle
 import random
 import time
 from typing import Union, List
-
-import dgl
 
 from CompelxNetwork.generator.generator import erdos_renyi_graph, barabasi_albert_graph
 from CompelxNetwork.robustness.simulated_attack import connectivity_robustness, controllability_robustness, \
@@ -53,13 +52,13 @@ def create_network_instances(topology_type: str, is_directed: bool, is_weighted:
     return networks
 
 
-def create_network_dataset(topology_types: List[str], is_directed: bool, is_weighted: bool,
-                           num_instance: int,
-                           network_size: Union[int, tuple],
-                           average_degree: Union[float, int, tuple],
-                           **kwargs
-                           ):
-    dgl_graghs = []
+def save_simulated_network_dataset(topology_types: List[str], is_directed: bool, is_weighted: bool,
+                                   num_instance: int,
+                                   network_size: Union[int, tuple],
+                                   average_degree: Union[float, int, tuple],
+                                   **kwargs
+                                   ):
+    graghs = []
     graph_labels = []
     connectivity_curves = []
     controllability_curves = []
@@ -75,8 +74,7 @@ def create_network_dataset(topology_types: List[str], is_directed: bool, is_weig
             average_degree=average_degree
         )
         for i, network_instance in enumerate(network_instances):
-            dgl_graph = dgl.from_networkx(network_instance)
-            dgl_graghs.append(dgl_graph)
+            graghs.append(network_instance)
             graph_labels.append(topology_type)
             save_robustness = kwargs.get('save_robustness', None)
             if save_robustness:
@@ -107,7 +105,7 @@ def create_network_dataset(topology_types: List[str], is_directed: bool, is_weig
                     else:
                         raise NotImplementedError(f'{r} not implemented')
     res = {
-        'graphs': dgl_graghs,
+        'graphs': graghs,
         'labels': graph_labels,
     }
 
@@ -118,4 +116,29 @@ def create_network_dataset(topology_types: List[str], is_directed: bool, is_weig
     if 'communicability' in kwargs.get('save_robustness', None):
         res['communicability_curves'] = communicability_curves
 
+    save_path = kwargs.get('save_path', None)
+    if save_path:
+        with open(f'{save_path}.pkl', 'wb') as file:
+            pickle.dump(res, file)
+            print(f'Simulated network dataset save at {save_path}.pkl')
     return res
+
+
+def load_simulated_network_dataset(load_path: str):
+    with open(f'{load_path}.pkl', 'rb') as file:
+        res = pickle.load(file)
+        return res
+
+
+# todo: add a dict-saving function
+save_simulated_network_dataset(
+    topology_types=['er', 'ba'],
+    is_directed=True,
+    is_weighted=True,
+    num_instance=100,
+    network_size=(100, 200),
+    average_degree=(4, 6),
+    save_robustness=['connectivity'],
+    attack='node',
+    strategy='degree'
+)

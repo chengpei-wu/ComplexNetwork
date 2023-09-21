@@ -10,6 +10,20 @@ from CompelxNetwork.robustness.network_attack import network_attack
 
 def connectivity_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> \
         Tuple[List[float], np.ndarray]:
+    """
+    connectivity robustness of network
+
+    Parameters
+    ----------
+    graph : the attacked network
+    attack : node or edge attacks
+    strategy : the strategy of choosing targets under attacks
+
+    Returns
+    -------
+    connectivity curve under attacks, and its average value
+
+    """
     G = deepcopy(graph)
     N = G.number_of_nodes()
     attack_sequence = network_attack(G, attack=attack, strategy=strategy)
@@ -49,6 +63,20 @@ def connectivity_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'n
 
 def controllability_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> \
         Tuple[List[float], np.ndarray]:
+    """
+    controllability robustness of network
+
+    Parameters
+    ----------
+    graph : the attacked network
+    attack : node or edge attacks
+    strategy : the strategy of choosing targets under attacks
+
+    Returns
+    -------
+    controllability curve under attacks, and its average value
+
+    """
     G = deepcopy(graph)
     N = G.number_of_nodes()
     attack_sequence = network_attack(G, attack=attack, strategy=strategy)
@@ -75,6 +103,21 @@ def controllability_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str =
 
 def communicability_robustness(graph: Union[nx.Graph, nx.DiGraph], attack: str = 'node', strategy: str = 'degree') -> \
         Tuple[List[float], np.ndarray]:
+    """
+    communicability robustness of network
+
+    Parameters
+    ----------
+    graph : the attacked network
+    attack : node or edge attacks
+    strategy : the strategy of choosing targets under attacks
+
+    Returns
+    -------
+    communicability curve under attacks, and its average value
+
+    """
+
     G = deepcopy(graph)
     N = G.number_of_nodes()
     attack_sequence = network_attack(G, attack=attack, strategy=strategy)

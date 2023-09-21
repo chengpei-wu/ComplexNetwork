@@ -8,6 +8,18 @@ from CompelxNetwork.robustness_optimization.GA.individual import Individual
 
 
 def make_crossover(ind1: Individual, ind2: Individual, p_cross: float) -> Union[nx.Graph, nx.DiGraph]:
+    """
+
+    Parameters
+    ----------
+    ind1 : individual 1
+    ind2 : individual 2
+    p_cross : the possibility of cross
+
+    Returns
+    -------
+    the new crossed graph
+    """
     g1 = deepcopy(ind1.g)
     g2 = deepcopy(ind2.g)
     N = g1.number_of_nodes()
