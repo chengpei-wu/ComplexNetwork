@@ -5,7 +5,9 @@ from dgl.nn.pytorch.glob import *
 
 
 class MLP(nn.Module):
-    """Construct two-layer MLP-type aggregator for GIN model"""
+    """
+    Construct two-layer MLP-type aggregator for GIN model
+    """
 
     def __init__(self, input_dim, hidden_dim, output_dim):
         super().__init__()
@@ -22,6 +24,10 @@ class MLP(nn.Module):
 
 
 class GIN(nn.Module):
+    """
+    See How powerful are graph neural networks. Xu et.al.
+    """
+
     def __init__(self, input_dim, hidden_dim, output_dim):
         super().__init__()
         self.ginlayers = nn.ModuleList()
@@ -69,6 +75,10 @@ class GIN(nn.Module):
 
 
 class Multi_GIN(nn.Module):
+    """
+    multi-task GIN for robustness prediction
+    """
+
     def __init__(self, input_dim, hidden_dim, output_dim):
         super().__init__()
         self.ginlayers = nn.ModuleList()

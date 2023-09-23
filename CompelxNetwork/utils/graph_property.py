@@ -1,7 +1,20 @@
 from CompelxNetwork.spectral_measure.robustness_spectral_measure import *
 
 
-def get_graph_props(graph, props):
+def get_graph_props(graph: Union[nx.Graph, nx.DiGraph], props):
+    """
+    get graph-level properties of a graph
+
+    Parameters
+    ----------
+    graph : input graph
+    props : the properties
+
+    Returns
+    -------
+    the list of graph properties
+
+    """
     graph_props = []
     if 'betweenness' in props:
         graph_props.append(sum(nx.betweenness_centrality(graph).values()) / len(graph))

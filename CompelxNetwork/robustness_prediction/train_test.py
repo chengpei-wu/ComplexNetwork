@@ -8,25 +8,36 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.utils import shuffle
 from torch.utils.data import DataLoader
 
-from models.CNN_LFR.CNN_LFR import CNN_LFR
-from models.CNN_SPP.CNN_SPP import CNN_SPP
-from parameters import *
-from utils.utils_cnn import load_network_cnn, collate_cnn, load_lfr_embeddings, load_labels, load_var_network
-from utils.utils_gnn import load_network_gnn, collate_gnn, collate_gnn_multi
-from utils.utils_tool_function import print_progress
+from CompelxNetwork.robustness_prediction.models.CNN_SPP import CNN_SPP
+from CompelxNetwork.robustness_prediction.utils.utils_cnn import collate_cnn
+from CompelxNetwork.robustness_prediction.utils.utils_gnn import collate_gnn, collate_gnn_multi
+from CompelxNetwork.utils.tool_functions import print_progress
 
 
-# training CNN model
-def train_cnn(device, model, data_path, label, max_epoch, batch_size, save_path):
-    # data processing
-    if isinstance(model, CNN_LFR):
-        x = load_lfr_embeddings(data_path, w=500)
-        y = load_labels(data_path, label)
-        graphs = list(zip(x, y))
-    elif isinstance(model, CNN_SPP):
-        graphs = load_network_cnn(data_path, label)
-    else:
-        graphs = load_var_network(data_path, label, fixed_size=500, sampling='random')
+def train_cnn(
+        device: torch.device,
+        model: torch.Module,
+        graphs: list,
+        max_epoch: int,
+        batch_size: int,
+        save_path: str
+):
+    """
+    training for a CNN model
+    Parameters
+    ----------
+    device : device: GPU or CPU
+    model : the trained model
+    graphs : the trained graphs with labels: [(graph_0, label_0), ..., (graph_n, label_n)]
+    max_epoch : the maximum number of training epochs
+    batch_size : the batch size of training setting
+    save_path : the save model path
+
+    Returns
+    -------
+    the training losses per steps: [[mae, val_mae], ...]
+
+    """
     graphs = shuffle(graphs)
     # using 9/10 of data for training, the rest for validation
     train_data_number = round(len(graphs) * 0.9)
@@ -55,12 +66,12 @@ def train_cnn(device, model, data_path, label, max_epoch, batch_size, save_path)
     for epoch in range(max_epoch):
         model.train()
         total_loss = 0
-        for batch, (batched_graph, labels) in enumerate(train_loader):
+        for batch, (batched_graph, robustness) in enumerate(train_loader):
             print_progress(batch, train_data_number // batch_size, prefix=f'Epoch {epoch}: ')
             batched_graph = batched_graph.to(device)
-            labels = labels.to(device)
+            robustness = robustness.to(device)
             logits = model(batched_graph)
-            loss = loss_fcn(logits, labels)
+            loss = loss_fcn(logits, robustness)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -84,10 +95,30 @@ def train_cnn(device, model, data_path, label, max_epoch, batch_size, save_path)
     return loss_history
 
 
-# training GNN model
-def train_gnn(device, model, data_path, label, max_epoch, batch_size, save_path):
-    # data processing
-    graphs = load_network_gnn(data_path, label)
+def train_gnn(
+        device: torch.device,
+        model: torch.Module,
+        graphs: list,
+        max_epoch: int,
+        batch_size: int,
+        save_path: str
+):
+    """
+    training for a GNN model
+    Parameters
+    ----------
+    device : device: GPU or CPU
+    model : the trained model
+    graphs : the trained graphs with labels: [(graph_0, label_0), ..., (graph_n, label_n)]
+    max_epoch : the maximum number of training epochs
+    batch_size : the batch size of training setting
+    save_path : the save model path
+
+    Returns
+    -------
+    the training losses per steps: [[mae, val_mae], ...]
+
+    """
     graphs = shuffle(graphs)
     # using 9/10 of data for training, the rest for validation
     train_data_number = round(len(graphs) * 0.9)
@@ -143,9 +174,30 @@ def train_gnn(device, model, data_path, label, max_epoch, batch_size, save_path)
 
 
 # training GNN model, with multi-task learning
-def train_multi_gnn(device, model, data_path, label, max_epoch, batch_size, save_path):
-    # data processing
-    graphs = load_network_gnn(data_path, label)
+def train_multi_gnn(
+        device: torch.device,
+        model: torch.Module,
+        graphs: list,
+        max_epoch: int,
+        batch_size: int,
+        save_path: str
+):
+    """
+    training for a multi-task GNN model
+    Parameters
+    ----------
+    device : device: GPU or CPU
+    model : the trained model
+    graphs : the trained graphs with labels: [(graph_0, label_0), ..., (graph_n, label_n)]
+    max_epoch : the maximum number of training epochs
+    batch_size : the batch size of training setting
+    save_path : the save model path
+
+    Returns
+    -------
+    the training losses per steps: [[mae, val_mae], ...]
+
+    """
     graphs = shuffle(graphs)
     train_data_number = round(len(graphs) * 0.9)
     train_loader = DataLoader(
@@ -266,7 +318,7 @@ def evaluate_multi(data_loader, device, model):
 
 
 # predict testing data
-def predict(data_loader, device, model):
+def predict(data_loader, robustness, device, model):
     model.eval()
     sim = []
     pred = []
@@ -286,20 +338,20 @@ def predict(data_loader, device, model):
     toc = time() - tic
     pred = np.array(pred).squeeze()
     sim = np.array(sim).squeeze()
-    if test_params['label'] == 'pt':
+    if robustness == 'pt':
         return calculate_horizontal_accuracy(pred, sim, toc / 900)
-    elif test_params['label'] == 'cc':
+    elif robustness == 'cc':
         return calculate_vertical_accuracy(pred, sim, toc / 900)
     else:
         mae = np.mean(np.abs(sim - pred), axis=1)
-    if test_params['label'] == 'yc':
+    if robustness == 'yc':
         prediction = {
             'sim_yc': sim,
             'pred_yc': pred,
             'time': toc / 900,
             'mae_yc': mae
         }
-    if test_params['label'] == 'lc':
+    if robustness == 'lc':
         prediction = {
             'sim_lc': sim,
             'pred_lc': pred,

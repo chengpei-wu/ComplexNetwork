@@ -1,4 +1,18 @@
 def uniform_sampling(input_curve: list, percentage_interval: int) -> list:
+    """
+    uniform sampling
+
+    Parameters
+    ----------
+    input_curve : the original curve
+    percentage_interval : the interval size
+
+    Returns
+    -------
+    the sampled curve
+
+    """
+
     if percentage_interval <= 0 or percentage_interval >= 100:
         raise ValueError('percentage_interval: must be 0~100')
 

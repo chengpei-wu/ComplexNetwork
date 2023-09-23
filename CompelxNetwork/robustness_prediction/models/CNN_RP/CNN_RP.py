@@ -5,6 +5,10 @@ import torch.nn.init as init
 
 
 class MLP(nn.Module):
+    """
+    regression module
+    """
+
     def __init__(self, input_dim, output_dim):
         super().__init__()
         self.linears = nn.ModuleList()
@@ -18,11 +22,24 @@ class MLP(nn.Module):
 
 
 def init_weights(m):
+    """
+    init weight
+    """
     if isinstance(m, nn.Conv2d):
         init.trunc_normal_(m.weight, std=0.01)
 
 
 class CNN_RP(nn.Module):
+    """
+    CNN-RP module
+
+    References
+    ----------
+    [1] Yang Lou, Yaodong He, Lin Wang, and Guanrong Chen "Predicting Network Controllability Robustness: A Convolutional Neural Network Approach"
+    IEEE Transactions on Cybernetics vol. 52, no. 5, pp. 4052-4063; doi:10.1109/TCYB.2020.3013251 (2022)
+
+    """
+
     def __init__(self, input_size=1000, output_size=201):
         super().__init__()
         self.input_size = input_size

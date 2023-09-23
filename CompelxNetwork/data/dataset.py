@@ -6,7 +6,7 @@ from typing import Union, List
 from CompelxNetwork.generator.generator import erdos_renyi_graph, barabasi_albert_graph
 from CompelxNetwork.robustness.simulated_attack import connectivity_robustness, controllability_robustness, \
     communicability_robustness
-from CompelxNetwork.utils.tool_function import print_progress
+from CompelxNetwork.utils.tool_functions import print_progress
 
 
 def create_network_instances(topology_type: str, is_directed: bool, is_weighted: bool, num_instance: int,

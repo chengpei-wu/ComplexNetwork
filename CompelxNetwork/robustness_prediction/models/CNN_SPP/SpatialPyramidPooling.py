@@ -5,7 +5,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def spatial_pyramid_pool(previous_conv, levels, mode):
+def spatial_pyramid_pool(previous_conv: torch.Tensor, levels: list, mode: str):
+    """
+
+    Parameters
+    ----------
+    previous_conv : the feature maps
+    levels : spatial levels
+    mode : pooling operator
+
+    Returns
+    -------
+    the fixed length representation
+
+    """
     num_sample = previous_conv.size(0)
     previous_conv_size = [int(previous_conv.size(2)), int(previous_conv.size(3))]
     for i in range(len(levels)):
@@ -36,6 +49,11 @@ def spatial_pyramid_pool(previous_conv, levels, mode):
 
 
 class SpatialPyramidPooling(nn.Module):
+    """
+    Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition,
+    K. He, X. Zhang, S. Ren, J. Sun
+    """
+
     def __init__(self, levels, mode="max"):
         super(SpatialPyramidPooling, self).__init__()
         self.levels = levels

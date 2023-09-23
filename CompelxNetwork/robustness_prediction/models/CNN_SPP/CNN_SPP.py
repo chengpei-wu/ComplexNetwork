@@ -2,7 +2,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.CNN_SPP.SpatialPyramidPooling import SpatialPyramidPooling
+from CompelxNetwork.robustness_prediction.models.CNN_SPP.SpatialPyramidPooling import SpatialPyramidPooling
 
 
 class MLP(nn.Module):
@@ -23,6 +23,16 @@ class MLP(nn.Module):
 
 
 class CNN_SPP(nn.Module):
+    """
+    CNN-SPP module
+
+    References
+    -----------
+    [1] Chengpei Wu, Yang Lou, Lin Wang, Junli Li, and Guanrong Chen "SPP-CNN: An Efficient Framework for Network Robustness Prediction"
+    IEEE Transactions on Circuits and Systems I: Regular Papers doi:10.1109/TCSI.2023.3296602 (2023)
+
+    """
+
     def __init__(self, output_size=201, levels=[1, 2, 4]):
         super().__init__()
         self.output_size = output_size

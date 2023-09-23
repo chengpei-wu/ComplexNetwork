@@ -4,6 +4,10 @@ import torch.nn.functional as F
 
 
 class MLP(nn.Module):
+    """
+    the regression module for LFR-CNN
+    """
+
     def __init__(self, input_dim, output_dim):
         super().__init__()
         self.linears = nn.ModuleList()
@@ -18,6 +22,15 @@ class MLP(nn.Module):
 
 
 class CNN_LFR(nn.Module):
+    """
+    CNN-LFR module
+
+    References
+    -----------
+    [1] Yang Lou, Ruizi Wu, Junli Li, Lin Wang, Xiang Li, and Guanrong Chen "A Learning Convolutional Neural Network Approach for Network Robustness Prediction"
+    IEEE Transactions on Cybernetics vol. 53, no. 7, pp. 4531-4544; doi:10.1109/TCYB.2022.3207878 (2023)
+    """
+
     def __init__(self, input_size=1000, output_size=201):
         super().__init__()
         self.input_size = input_size
@@ -43,6 +56,9 @@ class CNN_LFR(nn.Module):
         return out
 
     def get_mlp_input_size(self):
+        """
+        calculate the input size of MLP
+        """
         if self.input_size == 1000:
             _input = torch.rand((1, 1, 125, 160))
         elif self.input_size == 500:
