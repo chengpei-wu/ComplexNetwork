@@ -3,7 +3,7 @@ name: Release Python Package to PyPI
 on:
   release:
     types:
-      - created
+      - published
 
 jobs:
   build_and_deploy:
