@@ -9,17 +9,31 @@
 name: Upload Python Package
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
-
+  check-keyword:
     runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Check commit message
+        run: |
+          if [[ ${{ github.event.commits.*.message }} == *please release on pypi* ]]; then
+            echo "Keyword found in commit message. Triggering workflow..."
+          else
+            echo "Keyword not found in commit message. Skipping workflow..."
+            exit 0
+          fi
+  deploy:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
