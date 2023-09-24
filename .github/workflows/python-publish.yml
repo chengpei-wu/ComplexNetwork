@@ -28,9 +28,9 @@ jobs:
         run: |
           keyword="prop"
           for commit in ${{ github.event.commits }}; do
+            echo "${commit.message}"
             if echo "${commit.message}" | grep -q "${keyword}"; then
               echo "Keyword found in commit message. Triggering workflow..."
-              echo "${commit.message}"
               exit 0
             else
               echo "Keyword not found in commit message. Skipping workflow..."
