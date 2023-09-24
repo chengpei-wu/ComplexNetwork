@@ -28,6 +28,7 @@ jobs:
         run: |
           if [[ ${{ github.event.commits.*.message }} == *"prop"* ]]; then
             echo "Keyword found in commit message. Triggering workflow..."
+            echo ${{ github.event.commits.*.message }}
             exit 0
           else
             echo "Keyword not found in commit message. Skipping workflow..."
