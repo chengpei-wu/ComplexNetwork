@@ -3,9 +3,9 @@ import os
 import networkx as nx
 import torch
 
-from CompelxNetwork.data.dataset import save_simulated_network_dataset, load_simulated_network_dataset
-from CompelxNetwork.robustness_prediction.models.CNN_RP import CNN_RP
-from CompelxNetwork.robustness_prediction.train_test import train_cnn
+from cnt.data.dataset import save_simulated_network_dataset, load_simulated_network_dataset
+from cnt.robustness_prediction.models.CNN_RP import CNN_RP
+from cnt.robustness_prediction.train_test import train_cnn
 
 if not os.path.exists('./demo_dataset.pkl'):
     save_simulated_network_dataset(

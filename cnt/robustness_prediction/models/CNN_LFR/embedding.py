@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 
-from CompelxNetwork.robustness_prediction.models.CNN_LFR.receptive_field import ReceptiveField
+from cnt.robustness_prediction.models.CNN_LFR.receptive_field import ReceptiveField
 
 
 class LFR:

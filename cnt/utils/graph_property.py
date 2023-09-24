@@ -1,4 +1,4 @@
-from CompelxNetwork.spectral_measure.robustness_spectral_measure import *
+from cnt.spectral_measure.robustness_spectral_measure import *
 
 
 def get_graph_props(graph: Union[nx.Graph, nx.DiGraph], props):

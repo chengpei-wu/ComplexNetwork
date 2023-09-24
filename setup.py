@@ -6,7 +6,7 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'ComplexNetwork'
+NAME = 'complex-network-tools'
 DESCRIPTION = 'A Python package for generating, learning, and analysis of complex networks.'
 URL = 'https://github.com/chengpei-wu/ComplexNetwork'
 EMAIL = 'chengpei.wu@hotmail.com'

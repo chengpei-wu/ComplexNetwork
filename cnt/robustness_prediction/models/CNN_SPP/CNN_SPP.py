@@ -2,7 +2,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
-from CompelxNetwork.robustness_prediction.models.CNN_SPP.SpatialPyramidPooling import SpatialPyramidPooling
+from cnt.robustness_prediction.models.CNN_SPP.SpatialPyramidPooling import SpatialPyramidPooling
 
 
 class MLP(nn.Module):

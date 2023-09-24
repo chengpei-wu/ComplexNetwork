@@ -4,8 +4,8 @@ from typing import Union
 
 import networkx as nx
 
-from CompelxNetwork.robustness_optimization.GA.individual import Individual
-from CompelxNetwork.robustness_optimization.GA.utils import make_crossover
+from cnt.robustness_optimization.GA.individual import Individual
+from cnt.robustness_optimization.GA.utils import make_crossover
 
 
 class Population:

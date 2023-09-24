@@ -1,13 +1,13 @@
 # ComplexNetwork
 
-ComplexNetwork is a Python package for generating, learning, and analysis of complex networks.
+complex-network-tools is a Python package for generating, learning, and analysis of complex networks.
 
 # Examples
 
 ##### Synthetic network generating 
 
 ```python
-from CompelxNetwork.generator import erdos_renyi_graph
+from complex-network-tools.generator import erdos_renyi_graph
 
 # generate a Erdos Renyi(ER) random graph
 G = erdos_renyi_graph(num_nodes=100, num_edges=400, is_directed=False, is_weighted=False) 
@@ -19,7 +19,7 @@ G = barabasi_albert_graph(num_nodes=100, num_edges=400, is_directed=False, is_we
 ##### Network attack
 
 ```python
-from CompelxNetwork.robustness.network_attack import network_attack
+from complex-network-tools.robustness.network_attack import network_attack
 
 # get attack sequence of nodes
 G = erdos_renyi_graph(num_nodes=100, num_edges=400, is_directed=False, is_weighted=False)
@@ -30,7 +30,7 @@ attack_sequence = network_attack(graph=G, attack='node', strategy='degree')
 ##### Spectral measure
 
 ```python
-from CompelxNetwork.spectral_measure.robustness_spectral_measure import spectral_gap
+from complex-network-tools.spectral_measure.robustness_spectral_measure import spectral_gap
 
 # calculate spectral gap for a graph
 G = erdos_renyi_graph(num_nodes=100, num_edges=400, is_directed=False, is_weighted=False)
