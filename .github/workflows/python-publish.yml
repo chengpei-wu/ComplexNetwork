@@ -26,14 +26,17 @@ jobs:
 
       - name: Check commit message
         run: |
-          if [[ ${{ github.event.commits.*.message }} == *"prop"* ]]; then
-            echo "Keyword found in commit message. Triggering workflow..."
-            echo ${{ github.event.commits.*.message }}
-            exit 0
-          else
-            echo "Keyword not found in commit message. Skipping workflow..."
-            exit 1
-          fi
+          keyword="prop"
+          for commit in ${{ github.event.commits }}; do
+            if echo "${commit.message}" | grep -q "${keyword}"; then
+              echo "Keyword found in commit message. Triggering workflow..."
+              echo "${commit.message}"
+              exit 0
+            else
+              echo "Keyword not found in commit message. Skipping workflow..."
+              exit 1
+            fi
+          done
   deploy:
     runs-on: ubuntu-latest
     needs: check-keyword
