@@ -1,2 +1,3 @@
 include README.md LICENSE
 recursive-include ComplexNetwork/ *.mat
+recursive-include ComplexNetwork/ *.pkl

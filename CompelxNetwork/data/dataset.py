@@ -1,6 +1,5 @@
 import pickle
 import random
-import time
 from typing import Union, List
 
 from CompelxNetwork.generator.generator import erdos_renyi_graph, barabasi_albert_graph
@@ -33,7 +32,7 @@ def create_network_instances(topology_type: str, is_directed: bool, is_weighted:
                 num_edges = round(k * num_nodes)
             else:
                 num_edges = round((k * num_nodes) / 2)
-        t2 = time.time()
+
         if topology_type == 'er':
             graph = erdos_renyi_graph(
                 num_nodes=num_nodes,
@@ -52,12 +51,13 @@ def create_network_instances(topology_type: str, is_directed: bool, is_weighted:
     return networks
 
 
-def save_simulated_network_dataset(topology_types: List[str], is_directed: bool, is_weighted: bool,
-                                   num_instance: int,
-                                   network_size: Union[int, tuple],
-                                   average_degree: Union[float, int, tuple],
-                                   **kwargs
-                                   ):
+def save_simulated_network_dataset(
+        topology_types: List[str], is_directed: bool, is_weighted: bool,
+        num_instance: int,
+        network_size: Union[int, tuple],
+        average_degree: Union[float, int, tuple],
+        **kwargs
+):
     graghs = []
     graph_labels = []
     connectivity_curves = []
@@ -124,21 +124,7 @@ def save_simulated_network_dataset(topology_types: List[str], is_directed: bool,
     return res
 
 
-def load_simulated_network_dataset(load_path: str):
+def load_simulated_network_dataset(load_path: str) -> dict:
     with open(f'{load_path}.pkl', 'rb') as file:
         res = pickle.load(file)
         return res
-
-
-# todo: add a dict-saving function
-save_simulated_network_dataset(
-    topology_types=['er', 'ba'],
-    is_directed=True,
-    is_weighted=True,
-    num_instance=100,
-    network_size=(100, 200),
-    average_degree=(4, 6),
-    save_robustness=['connectivity'],
-    attack='node',
-    strategy='degree'
-)

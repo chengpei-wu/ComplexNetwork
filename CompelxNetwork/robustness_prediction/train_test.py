@@ -16,7 +16,7 @@ from CompelxNetwork.utils.tool_functions import print_progress
 
 def train_cnn(
         device: torch.device,
-        model: torch.Module,
+        model: torch.nn.Module,
         graphs: list,
         max_epoch: int,
         batch_size: int,
@@ -97,7 +97,7 @@ def train_cnn(
 
 def train_gnn(
         device: torch.device,
-        model: torch.Module,
+        model: torch.nn.Module,
         graphs: list,
         max_epoch: int,
         batch_size: int,
@@ -176,7 +176,7 @@ def train_gnn(
 # training GNN model, with multi-task learning
 def train_multi_gnn(
         device: torch.device,
-        model: torch.Module,
+        model: torch.nn.Module,
         graphs: list,
         max_epoch: int,
         batch_size: int,
