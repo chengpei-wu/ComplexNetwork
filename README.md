@@ -39,4 +39,6 @@ spectral_gap(G)
 
 # Install
 
+```shell
 pip install complex-network-tools
+```
