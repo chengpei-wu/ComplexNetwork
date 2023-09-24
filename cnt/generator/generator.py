@@ -125,48 +125,48 @@ def barabasi_albert_graph(num_nodes: int, num_edges: int, is_directed: bool = Fa
 def generic_scale_free_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError('the model is not implemented yet.')
 
 
 def extremely_homogeneous_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError('the model is not implemented yet.')
 
 
 def multi_local_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError('the model is not implemented yet.')
 
 
 def q_snapback_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError('the model is not implemented yet.')
 
 
 def random_hexagon_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError('the model is not implemented yet.')
 
 
 def random_triangle_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError('the model is not implemented yet.')
 
 
 def newman_watts_samll_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
                                    is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError('the model is not implemented yet.')
 
 
 def watts_strogatz_samll_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
                                      is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError('the model is not implemented yet.')

@@ -1,0 +1,61 @@
+Metadata-Version: 2.1
+Name: complex-network-tools
+Version: 0.1.1
+Summary: A Python package for generating, learning, and analysis of complex networks.
+Home-page: https://github.com/chengpei-wu/ComplexNetwork
+Author: Chengpei Wu
+Author-email: chengpei.wu@hotmail.com
+License: MIT
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.6.0
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+
+# ComplexNetwork
+
+complex-network-tools is a Python package for generating, learning, and analysis of complex networks.
+
+# Examples
+
+##### Synthetic network generating
+
+```python
+from cnt.generator import erdos_renyi_graph
+
+# generate a Erdos Renyi(ER) random graph
+G = erdos_renyi_graph(num_nodes=100, num_edges=400, is_directed=False, is_weighted=False)
+
+# generate a Barabasi Albert(BA) scale-free graph
+G = barabasi_albert_graph(num_nodes=100, num_edges=400, is_directed=False, is_weighted=False) 
+```
+
+##### Network attack
+
+```python
+from cnt.robustness.network_attack import network_attack
+
+# get attack sequence of nodes
+G = erdos_renyi_graph(num_nodes=100, num_edges=400, is_directed=False, is_weighted=False)
+# node-removal based network attacks, use the targeted-degree based node-removal strategy
+attack_sequence = network_attack(graph=G, attack='node', strategy='degree')
+```
+
+##### Spectral measure
+
+```python
+from cnt.spectral_measure.robustness_spectral_measure import spectral_gap
+
+# calculate spectral gap for a graph
+G = erdos_renyi_graph(num_nodes=100, num_edges=400, is_directed=False, is_weighted=False)
+spectral_gap(G)
+```
+
+# Install
+
+pip install complex-network-tools
