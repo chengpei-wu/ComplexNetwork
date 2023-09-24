@@ -1,4 +1,4 @@
-# ComplexNetwork
+# complex-network-tools
 
 complex-network-tools is a Python package for generating, learning, and analysis of complex networks.
 
