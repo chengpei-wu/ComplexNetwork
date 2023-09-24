@@ -28,12 +28,15 @@ jobs:
         run: |
           if [[ ${{ github.event.commits.*.message }} == *"prop"* ]]; then
             echo "Keyword found in commit message. Triggering workflow..."
+            keyword_found=true
           else
             echo "Keyword not found in commit message. Skipping workflow..."
-            exit 0
+            keyword_found=false
           fi
   deploy:
     runs-on: ubuntu-latest
+    if: steps.check-keyword.outputs.keyword_found == 'false'
+
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
