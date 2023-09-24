@@ -27,7 +27,8 @@ jobs:
       - name: Check commit message
         run: |
           keyword="prop"
-          for commit in ${{ github.event.commits }}; do
+          commit_messages=$(echo "${{ github.event.commits }}" | jq -r '.[].message')
+          for message in $commit_messages; do
             echo "${commit.message}"
             if echo "${commit.message}" | grep -q "${keyword}"; then
               echo "Keyword found in commit message. Triggering workflow..."
