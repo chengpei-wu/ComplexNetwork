@@ -1,3 +1,5 @@
-import dgl.dataloading
+"""
+A package for create network instances and simulated dataset.
+"""
 
-dgl.dataloading.DataLoader
+from cnt.data import *

@@ -158,15 +158,95 @@ def random_triangle_graph(num_nodes: int, num_edges: int, is_directed: bool = Fa
     raise NotImplementedError('the model is not implemented yet.')
 
 
-def newman_watts_samll_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
-                                   is_weighted: bool = False) -> \
-        Union[
-            nx.Graph, nx.DiGraph]:
-    raise NotImplementedError('the model is not implemented yet.')
+# def newman_watts_samll_world_graph(num_nodes: int, num_edges: int, p: float, is_directed: bool = False,
+#                                    is_weighted: bool = False) -> \
+#         Union[
+#             nx.Graph, nx.DiGraph]:
+#     graph = nx.newman_watts_strogatz_graph(num_nodes, 2 * num_edges // num_nodes, p)
+#
+#     if is_directed:
+#         directed_graph = nx.DiGraph()
+#         # 将无向图的边赋予随机方向
+#         for edge in graph.edges():
+#             if random.random() < 0.5:
+#                 directed_graph.add_edge(edge[0], edge[1])
+#             else:
+#                 directed_graph.add_edge(edge[1], edge[0])
+#         graph = directed_graph
+#     # check if weighted
+#     if is_weighted:
+#         for u, v in graph.edges():
+#             weight = random.random()
+#             graph[u][v]['weight'] = weight
+#
+#     return graph
+#
+#
+# def watts_strogatz_samll_world_graph(num_nodes: int, num_edges: int, p: float, is_directed: bool = False,
+#                                      is_weighted: bool = False) -> \
+#         Union[
+#             nx.Graph, nx.DiGraph]:
+#     graph = nx.watts_strogatz_graph(num_nodes, 2 * num_edges // num_nodes, p)
+#
+#     if is_directed:
+#         directed_graph = nx.DiGraph()
+#         # 将无向图的边赋予随机方向
+#         for edge in graph.edges():
+#             if random.random() < 0.5:
+#                 directed_graph.add_edge(edge[0], edge[1])
+#             else:
+#                 directed_graph.add_edge(edge[1], edge[0])
+#         graph = directed_graph
+#     # check if weighted
+#     if is_weighted:
+#         for u, v in graph.edges():
+#             weight = random.random()
+#             graph[u][v]['weight'] = weight
+#
+#     return graph
 
 
-def watts_strogatz_samll_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
-                                     is_weighted: bool = False) -> \
-        Union[
-            nx.Graph, nx.DiGraph]:
-    raise NotImplementedError('the model is not implemented yet.')
+def network_with_degree_distribution(degree_distribution: str, num_nodes: int, num_edges: int):
+    """
+    Parameters
+    ----------
+    degree_distribution : the network degree distribution
+    num_nodes : number of nodes
+    num_edges : number of edges
+
+    Returns
+    -------
+    an undirected network with specified degree distribution
+
+    """
+
+    G = nx.Graph()
+
+    nodes = range(num_nodes)
+    G.add_nodes_from(nodes)
+
+    if degree_distribution == "power-law":
+        sfpara = {
+            'theta': 0,
+            'mu': 0.999
+        }
+        random.seed()
+        w = [(i + sfpara['theta']) ** -sfpara['mu'] for i in range(1, num_nodes + 1)]
+        ransec = np.cumsum(w)
+    elif degree_distribution == "poisson":
+        lam = 5
+        w = np.exp(-lam) * lam ** np.arange(num_nodes) / np.math.factorial(np.arange(num_nodes))
+        ransec = np.cumsum(w)
+    else:
+        raise NotImplementedError(f'{degree_distribution}')
+
+    while G.number_of_edges() < num_edges:
+        r = random.random() * ransec[-1]
+        node1 = next((i for i, v in enumerate(ransec) if r <= v), None)
+        r = random.random() * ransec[-1]
+        node2 = next((i for i, v in enumerate(ransec) if r <= v), None)
+
+        if node1 is not None and node2 is not None and node1 != node2:
+            G.add_edge(node1, node2)
+
+    return G
