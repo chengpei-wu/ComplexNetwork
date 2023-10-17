@@ -18,6 +18,7 @@ def havel_hakimi_process(degrees: list) -> list:
     ori_degrees = deepcopy(degrees)
     cnt = 0
     while degrees:
+        # print(degrees)
         d = degrees[0]
         degrees = degrees[1:]
         if d > len(degrees):

@@ -12,7 +12,7 @@ def get_graph_props(graph: Union[nx.Graph, nx.DiGraph], props):
 
     Returns
     -------
-    the list of graph properties
+    a list of graph properties
 
     """
     graph_props = []

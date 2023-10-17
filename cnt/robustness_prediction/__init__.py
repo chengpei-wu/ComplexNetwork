@@ -2,5 +2,5 @@
 A package of deep learning-based network robustness prediction
 """
 
-from .run_demo import *
-from .train_test import *
+from models.keras import *
+from models.troch import *

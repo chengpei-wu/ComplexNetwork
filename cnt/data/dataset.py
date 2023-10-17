@@ -2,19 +2,35 @@ import pickle
 import random
 from typing import Union, List
 
-from cnt.generator.generator import erdos_renyi_graph, barabasi_albert_graph
-from cnt.robustness.simulated_attack import connectivity_robustness, controllability_robustness, \
+from tqdm import tqdm
+
+from cnt.generator import erdos_renyi_graph, barabasi_albert_graph
+from cnt.robustness import connectivity_robustness, controllability_robustness, \
     communicability_robustness
-from cnt.utils.tool_functions import print_progress
 
 
 def create_network_instances(topology_type: str, is_directed: bool, is_weighted: bool, num_instance: int,
                              network_size: Union[int, tuple],
                              average_degree: Union[float, int, tuple]) -> list:
-    networks = []
+    """
+    generating synthetic network instances
 
-    for i in range(num_instance):
-        print_progress(now=i, total=num_instance, length=40, prefix=f'generating {topology_type.upper()} networks:')
+    Parameters
+    ----------
+    topology_type : the type of synthetic network
+    is_directed : directed network or not
+    is_weighted : random weighted network or not
+    num_instance : number of instances of the specified synthetic network type
+    network_size : network size (node numbers)
+    average_degree : average degree of synthetic networks
+
+    Returns
+    -------
+    a list of generated synthetic network instances
+
+    """
+    networks = []
+    for _ in tqdm(range(num_instance), desc=f'generating {topology_type.upper()} networks:'):
         if isinstance(network_size, tuple):
             num_nodes = random.randint(*network_size)
         else:
@@ -40,13 +56,15 @@ def create_network_instances(topology_type: str, is_directed: bool, is_weighted:
                 is_directed=is_directed,
                 is_weighted=is_weighted
             )
-        if topology_type == 'ba':
+        elif topology_type == 'ba':
             graph = barabasi_albert_graph(
                 num_nodes=num_nodes,
                 num_edges=num_edges,
                 is_directed=is_directed,
                 is_weighted=is_weighted
             )
+        else:
+            raise NotImplementedError
         networks.append(graph)
     return networks
 
@@ -58,6 +76,24 @@ def save_simulated_network_dataset(
         average_degree: Union[float, int, tuple],
         **kwargs
 ):
+    """
+    generating and saving synthetic network dataset
+
+    Parameters
+    ----------
+    topology_types : a list of the types of synthetic networks
+    is_directed : directed network or not
+    is_weighted : random weighted network or not
+    num_instance : number of instances of each synthetic network type
+    network_size : network size (node numbers)
+    average_degree : average degree
+    kwargs :
+
+    Returns
+    -------
+    a dict of generated networks with simulation results (e.g., network robustness)
+
+    """
     graghs = []
     graph_labels = []
     connectivity_curves = []
@@ -73,13 +109,12 @@ def save_simulated_network_dataset(
             network_size=network_size,
             average_degree=average_degree
         )
-        for i, network_instance in enumerate(network_instances):
+        for network_instance in tqdm(network_instances,
+                                     desc=f'calculating robustness of {topology_type.upper()} networks: '):
             graghs.append(network_instance)
             graph_labels.append(topology_type)
             save_robustness = kwargs.get('save_robustness', None)
             if save_robustness:
-                print_progress(now=i, total=num_instance,
-                               prefix=f'calculating robustness of {topology_type.upper()} networks: ')
                 for r in save_robustness:
                     if r == 'connectivity':
                         curve, _ = connectivity_robustness(
@@ -125,6 +160,18 @@ def save_simulated_network_dataset(
 
 
 def load_simulated_network_dataset(load_path: str) -> dict:
+    """
+    loading simulation network dataset
+
+    Parameters
+    ----------
+    load_path : the dataset path
+
+    Returns
+    -------
+    a dict of simulation dataset
+
+    """
     with open(f'{load_path}.pkl', 'rb') as file:
         res = pickle.load(file)
         return res

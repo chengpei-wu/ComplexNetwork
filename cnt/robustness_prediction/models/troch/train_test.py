@@ -8,9 +8,9 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.utils import shuffle
 from torch.utils.data import DataLoader
 
-from cnt.robustness_prediction.models.CNN_SPP import CNN_SPP
-from cnt.robustness_prediction.utils.utils_cnn import collate_cnn
-from cnt.robustness_prediction.utils.utils_gnn import collate_gnn, collate_gnn_multi
+from cnt.robustness_prediction.models.troch.CNN_SPP import CNN_SPP
+from cnt.robustness_prediction.models.troch.utils_cnn import collate_cnn
+from cnt.robustness_prediction.models.troch.utils_gnn import collate_gnn, collate_gnn_multi
 from cnt.utils.tool_functions import print_progress
 
 

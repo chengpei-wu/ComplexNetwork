@@ -6,7 +6,6 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam
-
 from utils.utils_cnn import Save_loss
 from utils.utils_gnn import print_progress
 
@@ -69,7 +68,7 @@ class CNN_LFR:
                        verbose=1)
         return np.array(loss_history.losses)
 
-    def my_predict(self, x_test, y_test, y_pt, y_cc, label):
+    def my_predict(self, x_test, y_test):
         y_pred = []
         l = len(x_test)
         tic = time()
@@ -81,11 +80,9 @@ class CNN_LFR:
         y_pred = np.array(y_pred).squeeze()
         y_test = np.array(y_test).squeeze()
         prediction = {
-            f'pred_{label}': y_pred,
-            f'sim_{label}': y_test,
-            f'mae_{label}': np.mean(np.abs(y_test - y_pred), axis=1),
+            f'pred': y_pred,
+            f'sim': y_test,
+            f'mae': np.mean(np.abs(y_test - y_pred), axis=1),
             'time': toc / l,
-            'sim_t': np.round(np.round(np.array(y_pt).squeeze(), 3) * 200) / 2,
-            'sim_m': np.round(np.array(y_cc).squeeze(), 3) * 100,
         }
         return prediction

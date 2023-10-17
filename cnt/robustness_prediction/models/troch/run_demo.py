@@ -4,8 +4,8 @@ import networkx as nx
 import torch
 
 from cnt.data.dataset import save_simulated_network_dataset, load_simulated_network_dataset
-from cnt.robustness_prediction.models.CNN_RP import CNN_RP
-from cnt.robustness_prediction.train_test import train_cnn
+from cnt.robustness_prediction.models.troch.CNN_RP import CNN_RP
+from cnt.robustness_prediction.models.troch.train_test import train_cnn
 
 if not os.path.exists('./demo_dataset.pkl'):
     save_simulated_network_dataset(
