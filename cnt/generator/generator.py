@@ -175,8 +175,10 @@ def generic_scale_free_graph(num_nodes: int, num_edges: int, is_directed: bool =
         if np.sum(tmpi) != 2 * num_edges:
             raise ValueError('Check edge sum ...')
         adj = tmpi
-
-    graph = nx.from_numpy_array(adj)
+    if is_directed:
+        graph = nx.from_numpy_array(adj, create_using=nx.DiGraph)
+    else:
+        graph = nx.from_numpy_array(adj)
 
     # check if weighted
     if is_weighted:
@@ -190,19 +192,159 @@ def generic_scale_free_graph(num_nodes: int, num_edges: int, is_directed: bool =
 def extremely_homogeneous_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError
 
 
 def multi_local_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
-        Union[
-            nx.Graph, nx.DiGraph]:
-    raise NotImplementedError('the model is not implemented yet.')
+        Union[nx.Graph, nx.DiGraph]:
+    raise NotImplementedError
 
 
 def q_snapback_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    raise NotImplementedError('the model is not implemented yet.')
+    def add_alink():
+        idx = np.random.randint(num_nodes)
+        list = np.where(adj[idx, :idx] == 0)[0]
+
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(adj[idx, :idx] == 0)[0]
+
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 1
+
+    def delete_alink():
+        idx = np.random.randint(num_nodes)
+        list = np.where(adj[idx, :idx] == 1)[0]
+
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(adj[idx, :idx] == 1)[0]
+
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 0
+
+    # for undirected networks
+    def eadd_udr():
+        idx = np.random.randint(num_nodes)
+        list = np.where(~adj[idx, :])[0]
+        list = np.setdiff1d(list, np.where(adj[:, idx])[0])
+
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(~adj[idx, :])[0]
+            list = np.setdiff1d(list, np.where(adj[:, idx])[0])
+
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 1
+        adj[jdx, idx] = 1
+
+    def edel_udr():
+        idx = np.random.randint(num_nodes)
+        list = np.where(adj[idx, :])[0]
+
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(adj[idx, :])[0]
+
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 0
+        adj[jdx, idx] = 0
+
+    def q_nlink(r, n, s, x):
+        # If s == 'q2e', x is the value of q in [0, 1]
+        # If s == 'e2q', x is the number of edges
+
+        if s == 'q2e':
+            return q2nlink(r, n, x)
+        elif s == 'e2q':
+            return nlink2q(r, n, x)
+        else:
+            raise ValueError('Invalid input for s')
+
+    def nlink2q(r, n, nlink):
+        PRECISION = 1E5
+        q_qsn = (nlink - n) / np.sum(np.arange(r + 1, n - 1) / (r - 1))
+        q_qsn = round(q_qsn * PRECISION) / PRECISION
+        return q_qsn
+
+    def q2nlink(r, n, q):
+        deg = np.zeros(n)
+        for i in range(r):
+            deg[i] = 1
+        for i in range(r, n):
+            deg[i] = 1 + np.floor((i - 2) / (r - 1)) * q
+        total_deg = round(np.sum(deg))
+        return total_deg
+
+    r = 2
+    itop = 'chain'
+    q = q_nlink(r, num_nodes, 'e2q', num_edges)  # estimate 'q' according to (r, n, m)
+
+    # --- step(1) generate a qsn --- #
+    adj = np.zeros((num_nodes, num_nodes))
+    for rdx in range(1, r + 1):
+        if rdx == 1:
+            if itop == 'chain':
+                adj = np.diag(np.ones(num_nodes - 1), 1)
+            elif itop == 'ring':
+                adj = np.diag(np.ones(num_nodes - 1), 1)
+                adj[num_nodes - 1, 0] = 1
+            elif itop == 'tree':
+                for i in range(1, num_nodes):
+                    adj[i, i + np.random.randint(num_nodes - i)] = 1
+                adj[num_nodes - 1, 0] = 1
+        else:
+            for i in range(rdx, num_nodes):
+                for j in range(i - rdx, rdx - 1, -1):
+                    if np.random.rand() <= q:
+                        adj[i, j] = 1
+
+    # --- step(2) control the exact number of edges --- #
+    cnt = np.sum(adj)
+    deltaE = cnt - num_edges
+
+    if deltaE > 0:
+        for i in range(int(deltaE)):
+            delete_alink()
+    elif deltaE < 0:
+        deltaE = (abs(int(deltaE)))
+        for i in range(deltaE):
+            add_alink()
+
+    if not is_directed:  # undirected
+        m2 = num_edges * 2
+        adj = adj + adj.T
+        cnt = np.sum(adj)
+
+        while cnt > m2:
+            deltaE = abs(cnt - m2)
+            for i in range(1, deltaE, 2):
+                edel_udr()
+            cnt = np.sum(adj)
+
+        while cnt < m2:
+            cnt = np.sum(adj)
+            deltaE = abs(cnt - m2)
+            for i in range(1, deltaE, 2):
+                eadd_udr()
+            cnt = np.sum(adj)
+
+        if np.sum(adj) != m2:
+            raise ValueError('Check edge_sum ...')
+
+    if is_directed:
+        graph = nx.from_numpy_array(adj, create_using=nx.DiGraph)
+    else:
+        graph = nx.from_numpy_array(adj)
+
+    # check if weighted
+    if is_weighted:
+        for u, v in graph.edges():
+            weight = random.random()
+            graph[u][v]['weight'] = weight
+    return graph
 
 
 def random_hexagon_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
@@ -214,21 +356,333 @@ def random_hexagon_graph(num_nodes: int, num_edges: int, is_directed: bool = Fal
 def random_triangle_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    raise NotImplementedError('the model is not implemented yet.')
+    def add_edge():
+        r = np.random.choice(num_nodes, 2, replace=False)
+        r1, r2 = r[0], r[1]
+        while adj[r1, r2] or adj[r2, r1]:
+            r = np.random.choice(num_nodes, 2, replace=False)
+            r1, r2 = r[0], r[1]
+        neb1 = np.append(np.where(adj[r2] == 1)[0], np.where(adj[:, r2] == 1)[0])
+        len_neb1 = len(neb1)
+        if len(np.unique(neb1)) < len_neb1:
+            raise Exception('.. check !')
+        r3 = neb1[np.random.randint(len_neb1)]
+        if adj[r3, r2]:
+            adj[r2, r1] = 1
+            if not adj[r1, r3] and not adj[r3, r1]:
+                adj[r1, r3] = 1
+        else:
+            adj[r1, r2] = 1
+            if not adj[r1, r3] and not adj[r3, r1]:
+                adj[r3, r1] = 1
+
+    def delete_edge():
+        r1 = np.random.randint(num_nodes)
+        neb1 = np.append(np.where(adj[r1] == 1)[0], np.where(adj[:, r1] == 1)[0])
+        len_neb1 = len(neb1)
+        if len(np.unique(neb1)) < len_neb1:
+            raise Exception('.. check !')
+        r2 = neb1[np.random.randint(len_neb1)]
+        adj[r1, r2] = 0
+        adj[r2, r1] = 0
+
+    def add_one_edge_uda():
+        r1 = np.random.randint(num_nodes)
+        neb1 = np.where(uda[r1] == 0)[0]
+        neb1 = neb1[neb1 != r1]
+        len_neb1 = len(neb1)
+        while len_neb1 == 0:
+            r1 = np.random.randint(num_nodes)
+            neb1 = np.where(uda[r1] == 0)[0]
+            neb1 = neb1[neb1 != r1]
+            len_neb1 = len(neb1)
+        r2 = neb1[np.random.randint(len_neb1)]
+        if not uda[r2, r1]:
+            uda[r1, r2] = 1
+            uda[r2, r1] = 1
+
+    Tri = 3
+    # Step(1) generate basic random triangles
+    adj = np.zeros((num_nodes, num_nodes))
+    for idx in range(Tri):
+        adj[idx, (idx + 1) % Tri] = 1
+    for idx in range(Tri, num_nodes):
+        jdx = np.random.randint(idx)
+        neb = np.append(np.where(adj[jdx] == 1)[0], np.where(adj[:, jdx] == 1)[0])
+        len_neb = len(neb)
+        if len(np.unique(neb)) < len_neb:
+            raise Exception('check!')
+        kdx = neb[np.random.randint(len_neb)]
+        if adj[kdx, jdx]:
+            tmpv = kdx
+            kdx = jdx
+            jdx = tmpv
+        adj[idx, jdx] = 1
+        adj[kdx, idx] = 1
+
+    # step(2) control exact number of edges
+    cnt = np.sum(adj)
+    deltaE = cnt - num_edges
+    if deltaE > 0:
+        while cnt > num_edges:
+            delete_edge()
+            cnt = np.sum(adj)
+    elif deltaE < 0:
+        while cnt < num_edges:
+            add_edge()
+            cnt = np.sum(adj)
+        while cnt > num_edges:
+            delete_edge()
+            cnt = np.sum(adj)
+
+    # step(3) check output
+    if is_directed:  # for directed networks
+        if np.sum(adj) != num_edges:
+            raise Exception('check edge sum ...')
+
+    else:  # for undirected networks
+        m2 = num_edges * 2
+        uda = adj + adj.T
+        deltaE = np.sum(uda) - m2
+        if deltaE > 0:
+            raise Exception('check edge sum ...')
+        while deltaE:
+            add_one_edge_uda()
+            deltaE = np.sum(uda) - m2
+        adj = uda
+
+    if is_directed:
+        graph = nx.from_numpy_array(adj, create_using=nx.DiGraph)
+    else:
+        graph = nx.from_numpy_array(adj)
+
+    # check if weighted
+    if is_weighted:
+        for u, v in graph.edges():
+            weight = random.random()
+            graph[u][v]['weight'] = weight
+
+    return graph
 
 
-def newman_watts_samll_world_graph(num_nodes: int, num_edges: int, p: float, is_directed: bool = False,
+def newman_watts_samll_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
                                    is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    raise NotImplementedError('the model is not implemented yet.')
+    def eadd_dir():
+        idx = np.random.randint(num_nodes)
+        list = np.where(np.logical_not(adj[idx, :]))[0]
+        list = list[list != idx]
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(np.logical_not(adj[idx, :]))[0]
+            list = list[list != idx]
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 1
+
+    def edel_dir():
+        idx = np.random.randint(num_nodes)
+        list = np.where(adj[idx, :])[0]
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(adj[idx, :])[0]
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 0
+
+    def eadd_udr():
+        idx = np.random.randint(num_nodes)
+        list = np.where(np.logical_not(adj[idx, :]))[0]
+        list = list[list != idx]
+        list = np.setdiff1d(list, np.where(adj[:, idx])[0])
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(np.logical_not(adj[idx, :]))[0]
+            list = list[list != idx]
+            list = np.setdiff1d(list, np.where(adj[:, idx])[0])
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 1
+        adj[jdx, idx] = 1
+
+    def edel_udr():
+        idx = np.random.randint(num_nodes)
+        list = np.where(adj[idx, :])[0]
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(adj[idx, :])[0]
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 0
+        adj[jdx, idx] = 0
+
+    if is_directed:
+        # --- step(1) construct a ring (k==2) --- #
+        adj = np.diag(np.ones(num_nodes - 1), 1) + np.diag(np.ones(num_nodes - num_nodes + 1), -(num_nodes - 1))
+        adj = adj + np.diag(np.ones(num_nodes - 2), -2).T + np.diag(np.ones(num_nodes - num_nodes + 2), num_nodes - 2).T
+        # --- step(2) adds shortcut edges --- #
+        edge_sum = np.sum(adj)
+        while edge_sum > num_edges:
+            print('   .. (too small m-val) deleting edges .. ')
+            deltaE = abs(edge_sum - num_edges)
+            for i in range(deltaE):
+                edel_dir()
+            edge_sum = np.sum(adj)
+        while edge_sum < num_edges:
+            deltaE = abs(edge_sum - num_edges)
+            for i in range(int(deltaE)):
+                eadd_dir()
+            edge_sum = np.sum(adj)
+        if np.sum(adj) != num_edges:
+            raise ValueError('check edge_sum ...')
+
+    else:
+        m2 = num_edges * 2
+        # --- step(1) construct a ring (k==2) --- #
+        adj = np.diag(np.ones(num_nodes - 1), 1) + np.diag(np.ones(num_nodes - num_nodes + 1), -(num_nodes - 1))
+        adj = adj + np.diag(np.ones(num_nodes - 2), -2).T + np.diag(np.ones(num_nodes - num_nodes + 2), num_nodes - 2).T
+        adj = adj + adj.T
+        # --- step(2) adds shortcut edges --- #
+        edge_sum = np.sum(adj)
+        while edge_sum > m2:
+            print('   .. (too small m-val) deleting edges .. ')
+            deltaE = abs(edge_sum - m2)
+            for i in range(deltaE, 2):
+                edel_udr()
+            edge_sum = np.sum(adj)
+        while edge_sum < m2:
+            edge_sum = np.sum(adj)
+            deltaE = abs(edge_sum - m2)
+            for i in range(0, int(deltaE), 2):
+                eadd_udr()
+            edge_sum = np.sum(adj)
+        if np.sum(adj) != m2:
+            raise ValueError('check edge_sum ...')
+
+    if is_directed:
+        graph = nx.from_numpy_array(adj, create_using=nx.DiGraph)
+    else:
+        graph = nx.from_numpy_array(adj)
+
+    # check if weighted
+    if is_weighted:
+        for u, v in graph.edges():
+            weight = random.random()
+            graph[u][v]['weight'] = weight
+
+    return graph
 
 
-def watts_strogatz_samll_world_graph(num_nodes: int, num_edges: int, p: float, is_directed: bool = False,
+def watts_strogatz_samll_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
                                      is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    raise NotImplementedError('the model is not implemented yet.')
+    def eadd_dir():
+        idx = np.random.randint(num_nodes)
+        list = np.where(np.logical_not(adj[idx, :]))[0]
+        list = list[list != idx]
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(np.logical_not(adj[idx, :]))[0]
+            list = list[list != idx]
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 1
+
+    def edel_dir():
+        idx = np.random.randint(num_nodes)
+        list = np.where(adj[idx, :])[0]
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(adj[idx, :])[0]
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 0
+
+    def eadd_udr():
+        idx = np.random.randint(num_nodes)
+        list = np.where(np.logical_not(adj[idx, :]))[0]
+        list = list[list != idx]
+        list = np.setdiff1d(list, np.where(adj[:, idx])[0])
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(np.logical_not(adj[idx, :]))[0]
+            list = list[list != idx]
+            list = np.setdiff1d(list, np.where(adj[:, idx])[0])
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 1
+        adj[jdx, idx] = 1
+
+    def edel_udr():
+        idx = np.random.randint(num_nodes)
+        list = np.where(adj[idx, :])[0]
+        while len(list) == 0:
+            idx = np.random.randint(num_nodes)
+            list = np.where(adj[idx, :])[0]
+        jdx = np.random.choice(list)
+        adj[idx, jdx] = 0
+        adj[jdx, idx] = 0
+
+    prop = 10
+
+    if is_directed:
+        # --- step(1) construct a backbone ring (k==2)--- #
+        adj = np.diag(np.ones(num_nodes - 1), 1) + np.diag(np.ones(num_nodes - num_nodes + 1), -(num_nodes - 1))
+        adj = adj + np.diag(np.ones(num_nodes - 2), -2).T + np.diag(np.ones(num_nodes - num_nodes + 2), num_nodes - 2).T
+        # --- step(2) adds shortcut edges --- #
+        edge_sum = np.sum(adj)
+        while edge_sum > num_edges:
+            print('   .. (too small m-val) deleting edges .. ')
+            deltaE = abs(edge_sum - num_edges)
+            for i in range(deltaE):
+                edel_dir()
+            edge_sum = np.sum(adj)
+        while edge_sum < num_edges:
+            deltaE = abs(edge_sum - num_edges)
+            for i in range(int(deltaE) // prop):
+                edel_dir()
+            edge_sum = np.sum(adj)
+            deltaE = abs(edge_sum - num_edges)
+            for i in range(int(deltaE)):
+                eadd_dir()
+            edge_sum = np.sum(adj)
+        if np.sum(adj) != num_edges:
+            raise ValueError('check edge_sum ...')
+
+    else:
+        m2 = num_edges * 2
+        # --- step(1) construct a backbone ring (k==2)--- #
+        adj = np.diag(np.ones(num_nodes - 1), 1) + np.diag(np.ones(num_nodes - num_nodes + 1), -(num_nodes - 1))
+        adj = adj + np.diag(np.ones(num_nodes - 2), -2).T + np.diag(np.ones(num_nodes - num_nodes + 2), num_nodes - 2).T
+        adj = adj + adj.T
+        # --- step(2) adds shortcut edges --- #
+        edge_sum = np.sum(adj)
+        if edge_sum < m2:
+            for i in range(1, int(abs(edge_sum - m2) // prop), 2):
+                edel_udr()
+        edge_sum = np.sum(adj)
+        while edge_sum > m2:
+            print('   .. (too small m-val) deleting edges .. ')
+            deltaE = abs(edge_sum - m2)
+            for i in range(1, deltaE, 2):
+                edel_udr()
+            edge_sum = np.sum(adj)
+        while edge_sum < m2:
+            edge_sum = np.sum(adj)
+            deltaE = abs(edge_sum - m2)
+            for i in range(1, int(deltaE), 2):
+                eadd_udr()
+            edge_sum = np.sum(adj)
+        if np.sum(adj) != m2:
+            raise ValueError('check edge_sum ...')
+
+    if is_directed:
+        graph = nx.from_numpy_array(adj, create_using=nx.DiGraph)
+    else:
+        graph = nx.from_numpy_array(adj)
+
+    # check if weighted
+    if is_weighted:
+        for u, v in graph.edges():
+            weight = random.random()
+            graph[u][v]['weight'] = weight
+
+    return graph
 
 
 def network_with_degree_distribution(num_nodes: int, avg_degree: int, degree_distribution: str):
