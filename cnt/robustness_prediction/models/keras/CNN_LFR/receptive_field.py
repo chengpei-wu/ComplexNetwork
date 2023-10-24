@@ -1,7 +1,7 @@
 import networkx as nx
 from pynauty.graph import Graph, canon_label
 
-from cnt.robustness_prediction.models.troch.CNN_LFR.util_pscn import betweenness_centrality, compute_distance
+from .util_pscn import betweenness_centrality, compute_distance
 
 labelling_procedures = {
     'betweenness': betweenness_centrality

@@ -10,7 +10,7 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import Sequential, load_model
 from utils.utils_tool_function import Save_loss
 
-from SpatialPyramidPooling import SpatialPyramidPooling
+from .SpatialPyramidPooling import SpatialPyramidPooling
 
 warnings.filterwarnings('ignore')
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = '3'  # Ignore warning

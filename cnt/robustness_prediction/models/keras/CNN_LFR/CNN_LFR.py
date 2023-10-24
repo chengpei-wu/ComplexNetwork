@@ -6,8 +6,8 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam
+from tqdm import tqdm
 from utils.utils_cnn import Save_loss
-from utils.utils_gnn import print_progress
 
 
 class CNN_LFR:
@@ -72,8 +72,7 @@ class CNN_LFR:
         y_pred = []
         l = len(x_test)
         tic = time()
-        for i, x in enumerate(x_test):
-            print_progress(i, l, prefix='CNN-LFR Predicting:')
+        for x in tqdm(x_test, desc='CNN-LFR Predicting: '):
             x = x.reshape(1, x.shape[0], x.shape[1], 1)
             y_pred.append(self.model.predict(x))
         toc = time() - tic
