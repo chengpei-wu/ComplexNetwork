@@ -189,17 +189,6 @@ def generic_scale_free_graph(num_nodes: int, num_edges: int, is_directed: bool =
     return graph
 
 
-def extremely_homogeneous_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
-        Union[
-            nx.Graph, nx.DiGraph]:
-    raise NotImplementedError
-
-
-def multi_local_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
-        Union[nx.Graph, nx.DiGraph]:
-    raise NotImplementedError
-
-
 def q_snapback_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
@@ -345,12 +334,6 @@ def q_snapback_graph(num_nodes: int, num_edges: int, is_directed: bool = False, 
             weight = random.random()
             graph[u][v]['weight'] = weight
     return graph
-
-
-def random_hexagon_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
-        Union[
-            nx.Graph, nx.DiGraph]:
-    raise NotImplementedError('the model is not implemented yet.')
 
 
 def random_triangle_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
@@ -683,6 +666,23 @@ def watts_strogatz_samll_world_graph(num_nodes: int, num_edges: int, is_directed
             graph[u][v]['weight'] = weight
 
     return graph
+
+
+def multi_local_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
+        Union[nx.Graph, nx.DiGraph]:
+    pass
+
+
+def extremely_homogeneous_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
+        Union[
+            nx.Graph, nx.DiGraph]:
+    pass
+
+
+def random_hexagon_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
+        Union[
+            nx.Graph, nx.DiGraph]:
+    pass
 
 
 def network_with_degree_distribution(num_nodes: int, avg_degree: int, degree_distribution: str):
