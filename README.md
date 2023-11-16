@@ -142,3 +142,27 @@ for gen in range(100):
             all_best_ind = best_ind
 
 ```
+
+### useful functions
+
+```python
+import networkx as nx
+import cnt
+
+G = cnt.erdos_renyi_graph(100, 400)
+
+# sort adjacency matrix
+cnt.adj_sort(adj=nx.adj_matrix(G))
+
+# shuffle adjacency matrix
+cnt.adj_shuffle(adj=nx.adj_matrix(G))
+
+# random sampling for adjacency matrix
+cnt.random_sampling(adj=nx.adj_matrix(G), fixed_size=500)
+
+# Bilinear interpolation for adjacency matrix
+cnt.bi_linear_sampling(adj=nx.adj_matrix(G), fixed_size=500)
+
+# nodes noises
+cnt.missing_nodes(adj=nx.adj_matrix(G), strategy='random', rate=0.1)
+```

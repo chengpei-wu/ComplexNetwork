@@ -4,10 +4,14 @@ import cnt
 
 
 class TestValidateInput:
-    @pytest.mark.parametrize('num_nodes, num_edges, is_directed, is_weighted', [
-        (100, (100 * 99) / 2 + 1, False, False),  # num_edges more than a complete graph
-        (100, 98, False, False),  # num_edges can not connect all nodes
-    ])
+    @pytest.mark.parametrize(
+        'num_nodes, num_edges, is_directed, is_weighted', [
+            # num_edges more than a complete graph
+            (100, (100 * 99) / 2 + 1, False, False),
+            # num_edges can not connect all nodes
+            (100, 98, False, False),
+        ]
+    )
     def test_valid_parameter(self, num_nodes, num_edges, is_directed, is_weighted):
         with pytest.raises(ValueError):
             cnt.erdos_renyi_graph(num_nodes, num_edges, is_directed, is_weighted)
