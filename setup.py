@@ -21,6 +21,7 @@ REQUIRED = [
     'numpy',
     'dgl',
     'torch',
+    'pytest',
 ]
 
 # What packages are optional?

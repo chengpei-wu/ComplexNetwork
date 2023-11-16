@@ -40,6 +40,8 @@ def effective_resistance(graph: Union[nx.Graph, nx.DiGraph]) -> np.ndarray:
     effective resistance
 
     """
+    if not nx.is_connected(graph):
+        return np.array(0.0)
     eig_val = np.sort(np.linalg.eigvals(nx.laplacian_matrix(graph).todense()))
     return (graph.number_of_nodes() * np.sum(1 / eig_val[1:])).real
 

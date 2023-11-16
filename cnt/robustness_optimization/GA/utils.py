@@ -79,3 +79,21 @@ def make_crossover(ind1: Individual, ind2: Individual, p_cross: float) -> Union[
     else:
         g_get = deepcopy(g2)
     return g_get
+
+
+def calculate_robustness(g):
+    R = 0
+    N = g.number_of_nodes()
+    G_t = deepcopy(g)
+    for atk in range(N):
+        deg = [G_t.degree(i) for i in range(N)]
+        atk_ind = deg.index(max(deg))
+        '''Get current node with largest degree'''
+        dele = []
+        for i in G_t[atk_ind]:
+            dele.append(i)
+        for i in dele:
+            G_t.remove_edge(i, atk_ind)
+        largest_cc = max(nx.connected_components(G_t), key=len)  # The largest connected component
+        R = R + float(len(largest_cc)) / N
+    return R / N

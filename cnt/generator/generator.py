@@ -3,6 +3,8 @@ from typing import Union
 
 import networkx as nx
 import numpy as np
+import powerlaw
+from networkx.generators.random_graphs import _random_subset
 
 from cnt.utils.algorithm import havel_hakimi_process
 
@@ -23,8 +25,8 @@ __all__ = [
 
 def erdos_renyi_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> Union[
     nx.Graph, nx.DiGraph]:
-    """
-    return Erdos Renyi (ER) graph.
+    """ Returns a Erdos Renyi (ER) random graph, which is chosen uniformly at random from the set
+    of all graphs with $num_nodes$ nodes and $num_edges$ edges.
 
     Parameters
     ----------
@@ -37,156 +39,211 @@ def erdos_renyi_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
     -------
     nx.Graph or nx.DiGraph
 
+    Notes
+    --------
+    for a common Erdos Renyi (ER) random graph,
+    the generating process is defined by the $G_{n,p}$ model,
+    $n$ is the number of nodes, $p$ is the probability of each possible edges.
+
+    See Also
+    ---------
+    >>> nx.gnm_random_graph
+    >>> nx.gnp_random_graph
+    >>> nx.erdos_renyi_graph
+
     References
     ----------
-    .. [1] P. Erdos and A. Renyi, "On the strength of connectedness of a random
+    .. [1] P. Erdos and A. Renyi, On Random Graphs, Publ. Math. 6, 290 (1959).
+    .. [2] E. N. Gilbert, Random Graphs, Ann. Math. Stat., 30, 1141 (1959).
+    .. [3] P. Erdos and A. Renyi, "On the strength of connectedness of a random
         graph," Acta Mathematica Hungarica, vol. 12, no. 1-2, pp. 261–267, 1964.
     """
-    if is_directed:
-        G = nx.DiGraph()
+
+    if num_edges < num_nodes * (num_nodes - 1) / 4:
+        # for sparse graph
+        G = nx.gnm_random_graph(n=num_nodes, m=num_edges, directed=is_directed)
     else:
-        G = nx.Graph()
+        # for dense graph
+        G = nx.dense_gnm_random_graph(n=num_nodes, m=num_edges, directed=is_directed)
 
-    for i in range(num_nodes):
-        G.add_node(i)
-
-    edge_list = []
-
-    while len(edge_list) < num_edges:
-        nodes = random.sample(range(num_nodes), 2)
-        if not is_directed:
-            edge = tuple(sorted(nodes))
-        else:
-            edge = tuple(nodes)
-        if edge not in edge_list:
-            edge_list.append(edge)
-
-    for edge in edge_list:
-        if is_weighted:
+    # check if weighted
+    if is_weighted:
+        for u, v in G.edges():
+            # random weights from 0 ~ 1
             weight = random.random()
-            G.add_edge(*edge, weight=weight)
-        else:
-            G.add_edge(*edge)
+            G[u][v]['weight'] = weight
     return G
+
+
+def _random_subset(seq, m, rng):
+    """Return m unique elements from seq.
+
+    This differs from random.sample which can return repeated
+    elements if seq holds repeated elements.
+
+    Note: rng is a random.Random or numpy.random.RandomState instance.
+    """
+    targets = set()
+    while len(targets) < m:
+        x = rng.choice(seq)
+        targets.add(x)
+    return targets
+
+
+def _split_number(m, n):
+    """
+    split a number as a list of length $n$
+    """
+    assert n > 0
+    assert m > 0
+    s = []
+    for i in range(n):
+        if i < n - 1:
+            part = m // (n - i)
+            s.append(part)
+            m -= part
+        else:
+            s.append(m)
+    return s
 
 
 def barabasi_albert_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
+    """returns a Barabasi Albert (BA) graph.
+    A graph of $num_nodes$ nodes is grown by attaching new nodes each with $m$
+    edges that are preferentially attached to existing nodes with high degree.
+
+    Parameters
+    ----------
+    num_nodes : number of nodes
+    num_edges : number of edges
+    is_directed : return directed graph
+    is_weighted : return graph with random edge weight
+
+    Returns
+    -------
+    nx.Graph or nx.DiGraph
+
+    Notes
+    -------
+    for a common Barabasi Albert (BA) graph,
+    the generating process is defined by the preferentially attaching strategy,
+    which adds fixed number of edges in each iteration. for this implementation,
+    the number of added edges in each iteration may be different to ensure generating fixed number of edges.
+
+    See Also
+    --------
+    >>> nx.barabasi_albert_graph
+
+    References
+    ----------
+    .. [1] A. L. Barabási and R. Albert "Emergence of scaling in
+        random networks", Science 286, pp 509-512, 1999.
     """
-        return Barabasi Albert (BA) graph.
 
-        Parameters
-        ----------
-        num_nodes : number of nodes
-        num_edges : number of edges
-        is_directed : return directed graph
-        is_weighted : return graph with random edge weight
-
-        Returns
-        -------
-        nx.Graph or nx.DiGraph
-
-        References
-        ----------
-        .. [1] A. L. Barabási and R. Albert "Emergence of scaling in
-            random networks", Science 286, pp 509-512, 1999.
-        """
     # calculate parameters
     n0 = int(np.ceil(num_edges / num_nodes) + 1)  # initial nodes
-    n_add = num_nodes - n0  # rest nodes are added later on
-    m_add = num_edges - np.math.comb(n0, 2)  # rest edges are added ...
-    m = int(np.floor(m_add / n_add))  # edges to add per-generation
-    delta = m_add % n_add
-    ms = m * np.ones(num_nodes, dtype=int)
-    ms[0:n0] = 0
-    if delta:
-        pos = np.arange(n0, n0 + delta)
-        ms[pos] = ms[pos] + 1
+    n = num_nodes - n0  # rest nodes are added later on
+    m_add = num_edges - np.math.comb(n0, 2)  # rest edges are added
 
-    # create initial graph
-    init_graph = nx.complete_graph(n0)
-    # add rest nodes and edges by preferential attachment mechanism
-    for m in ms[n0:]:
-        degrees = dict(init_graph.degree())
-        degree_sum = sum(degrees.values())
-        new_node = len(init_graph)
-        init_graph.add_node(new_node)
-        # using degree as weight
-        nodes = list(degrees.keys())
-        weights = [degree / degree_sum for degree in degrees.values()]
-        selected_nodes = np.random.choice(nodes, size=m, p=weights, replace=False)
-        for selected_node in selected_nodes:
-            init_graph.add_edge(new_node, selected_node)
+    # split m_add edges as a list of length $n$
+    m = _split_number(m_add, n)
+    assert sum(m) == m_add
+    assert len(m) == n
+
+    # Default initial graph : complete graph on $n0$ nodes
+    G = nx.complete_graph(n0)
+    # List of existing nodes, with nodes repeated once for each adjacent edge
+    repeated_nodes = [n for n, d in G.degree() for _ in range(d)]
+    # Start adding the other n - n0 nodes.
+    source = len(G)
+    _idx = 0
+    while source < num_nodes:
+        # Now choose m unique nodes from the existing nodes
+        # Pick uniformly from repeated_nodes (preferential attachment)
+        targets = _random_subset(repeated_nodes, m[_idx], random.Random())
+        # Add edges to m nodes from the source.
+        G.add_edges_from(zip([source] * m[_idx], targets))
+        # Add one node to the list for each new edge just created.
+        repeated_nodes.extend(targets)
+        # And the new node "source" has m edges to add to the list.
+        repeated_nodes.extend([source] * m[_idx])
+        source += 1
+        _idx += 1
 
     # check if directed
     if is_directed:
         directed_graph = nx.DiGraph()
-        directed_graph.add_nodes_from(init_graph.nodes())
-        for u, v in init_graph.edges():
+        directed_graph.add_nodes_from(G.nodes())
+        for u, v in G.edges():
             if random.random() < 0.5:
                 directed_graph.add_edge(u, v)
             else:
                 directed_graph.add_edge(v, u)
-        init_graph = directed_graph
+        G = directed_graph.copy()
+
     # check if weighted
     if is_weighted:
-        for u, v in init_graph.edges():
+        for u, v in G.edges():
             weight = random.random()
-            init_graph[u][v]['weight'] = weight
+            G[u][v]['weight'] = weight
 
-    return init_graph
+    return G
 
 
-def generic_scale_free_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
+def _power_law_numbers(num_points, sum_total, exponent):
+    pl = powerlaw.Power_Law(parameters=[exponent])
+    numbers = np.round(pl.generate_random(num_points)).astype(int)
+    current_sum = np.sum(numbers)
+    numbers = numbers * (sum_total / current_sum)
+    numbers = np.round(numbers).astype(int)
+    numbers[numbers == 0] = 1
+    return numbers
+
+
+def generic_scale_free_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False,
+                             gamma: float = 2.5) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    sfpara = {'theta': 0, 'mu': 0.999}
-    np.random.seed(42)
-    w = (1 + np.arange(num_nodes) + sfpara['theta']) ** (-sfpara['mu'])
-    ransec = np.cumsum(w)
+    """returns a generic scale-free (SF) graph, which satisfies the predefined power-law degree distribution.
 
-    # --- step(1) generate generic sf --- #
-    adj = np.zeros((num_nodes, num_nodes))
-    cnt = 0
+    Parameters
+    ----------
+    num_nodes :
+    num_edges :
+    is_directed :
+    is_weighted :
+    gamma :
 
-    if dir:  # for directed networks
-        while cnt < num_edges:
-            r = np.random.rand() * ransec[-1]
-            i = np.where(r <= ransec)[0][0]
-            r = np.random.rand() * ransec[-1]
-            j = np.where(r <= ransec)[0][0]
-            if i != j and not adj[i, j]:
-                adj[i, j] = 1
-                cnt += 1
-        if np.sum(adj) != num_edges:
-            raise ValueError('Check edge sum ...')
+    Returns
+    -------
 
-    else:  # for undirected networks
-        while cnt < num_edges:
-            r = np.random.rand() * ransec[-1]
-            i = np.where(r <= ransec)[0][0]
-            r = np.random.rand() * ransec[-1]
-            j = np.where(r <= ransec)[0][0]
-            if i != j and not adj[i, j] and not adj[j, i]:
-                adj[i, j] = 1
-                cnt += 1
-        tmpi = adj + adj.T
-        if np.sum(tmpi) != 2 * num_edges:
-            raise ValueError('Check edge sum ...')
-        adj = tmpi
+    """
+
+    # generating power-law degrees of all nodes
+    power_law_degrees = _power_law_numbers(num_nodes, num_edges * 2, gamma)
+    # generating a simple graph with power-law degree distribution
+    G = nx.expected_degree_graph(list(power_law_degrees), selfloops=False)
+
+    # check if directed
     if is_directed:
-        graph = nx.from_numpy_array(adj, create_using=nx.DiGraph)
-    else:
-        graph = nx.from_numpy_array(adj)
+        directed_graph = nx.DiGraph()
+        directed_graph.add_nodes_from(G.nodes())
+        for u, v in G.edges():
+            if random.random() < 0.5:
+                directed_graph.add_edge(u, v)
+            else:
+                directed_graph.add_edge(v, u)
+        G = directed_graph.copy()
 
     # check if weighted
     if is_weighted:
-        for u, v in graph.edges():
+        for u, v in G.edges():
             weight = random.random()
-            graph[u][v]['weight'] = weight
+            G[u][v]['weight'] = weight
 
-    return graph
+    return G
 
 
 def q_snapback_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
