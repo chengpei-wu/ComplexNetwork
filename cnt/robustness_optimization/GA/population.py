@@ -4,8 +4,8 @@ from typing import Union
 
 import networkx as nx
 
-from cnt.robustness_optimization.GA.individual import Individual
-from cnt.robustness_optimization.GA.utils import make_crossover
+from .cross_over import make_crossover
+from .individual import Individual
 
 
 class Population:
@@ -99,19 +99,12 @@ class Population:
         """
         if self.pop_size < self.max_size:
             for i in range(self.pop_size, self.max_size):
-                c_idx = random.randint(0, self.pop_size - 1)
-                G_t = deepcopy(self.individuals[c_idx].g)
-                rewireNum = random.randint(2, self.MaxRewire)
-                G_t = nx.double_edge_swap(G_t, nswap=rewireNum)
-                self.add_individual(Individual(G_t))
-
-        for idx in range(self.pop_size):
-            if random.random() < self.p_cross:
-                c_idx = random.randint(0, self.pop_size - 1)
-                while c_idx == idx:
-                    c_idx = random.randint(0, self.pop_size - 1)
-                G = make_crossover(self.individuals[c_idx], self.individuals[idx], self.p_cross)
-                self.replace_individual(Individual(G), c_idx)
+                p1 = random.randint(0, self.pop_size - 1)
+                p2 = random.randint(0, self.pop_size - 1)
+                while p2 == p1:
+                    p2 = random.randint(0, self.init_size - 1)
+                g_get = make_crossover(self.individuals[p1], self.individuals[p2], self.p_cross)
+                self.add_individual(Individual(g_get))
 
     def mutate(self, graph_ori: Union[nx.Graph, nx.DiGraph]):
 
@@ -124,24 +117,12 @@ class Population:
 
         """
 
-        for i in range(self.pop_size):
+        for i in range(1, self.pop_size):
             if random.random() <= self.p_mutate:
                 G_t = deepcopy(self.individuals[i].g)
                 rewireNum = random.randint(2, self.MaxRewire)
-                # for j in range(MaxAdd):
-                #     random_nodes = random.sample(G_t.nodes(), 2)
-                #     new_edge = tuple(random_nodes)
-                #     while new_edge in G_t.edges:
-                #         random_nodes = random.sample(G_t.nodes(), 2)
-                #         new_edge = tuple(random_nodes)
-                #     G_t.add_edge(*new_edge)
-                #     random_edge = random.choice(list(G_t.edges()))
-                #     G_t.remove_edge(*random_edge)
                 G_t = nx.double_edge_swap(G_t, nswap=rewireNum)
                 self.replace_individual(Individual(G_t), i)
-            self.individuals[i].R = self.individuals[i].cal_R()
-            # self.individuals[i].EMD = self.individuals[i].cal_EMD(graph_ori)
-            self.individuals[i].fitness = self.individuals[i].R
 
     def find_best(self) -> Individual:
         """

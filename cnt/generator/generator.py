@@ -3,7 +3,6 @@ from typing import Union
 
 import networkx as nx
 import numpy as np
-import powerlaw
 from networkx.generators.random_graphs import _random_subset
 
 from cnt.utils.algorithm import havel_hakimi_process
