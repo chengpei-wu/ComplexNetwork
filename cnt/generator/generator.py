@@ -5,7 +5,7 @@ import networkx as nx
 import numpy as np
 from networkx.generators.random_graphs import _random_subset
 
-from cnt.utils.algorithm import havel_hakimi_process
+from cnt.utils.algorithm import uncon2con
 
 __all__ = [
     'erdos_renyi_graph',
@@ -15,7 +15,6 @@ __all__ = [
     'extremely_homogeneous_graph',
     'random_hexagon_graph',
     'random_triangle_graph',
-    'network_with_degree_distribution',
     'newman_watts_samll_world_graph',
     'watts_strogatz_samll_world_graph',
     'multi_local_world_graph',
@@ -43,6 +42,7 @@ def erdos_renyi_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
     for a common Erdos Renyi (ER) random graph,
     the generating process is defined by the $G_{n,p}$ model,
     $n$ is the number of nodes, $p$ is the probability of each possible edges.
+    In this implementation, we ensure that all generated ER networks are connected graph.
 
     See Also
     ---------
@@ -65,6 +65,13 @@ def erdos_renyi_graph(num_nodes: int, num_edges: int, is_directed: bool = False,
         # for dense graph
         G = nx.dense_gnm_random_graph(n=num_nodes, m=num_edges, directed=is_directed)
 
+    # check if unconnected
+    if is_directed:
+        if not nx.is_weakly_connected(G):
+            G = uncon2con(G, 'attach')
+    else:
+        if not nx.is_connected(G):
+            G = uncon2con(G, 'attach')
     # check if weighted
     if is_weighted:
         for u, v in G.edges():
@@ -191,39 +198,56 @@ def barabasi_albert_graph(num_nodes: int, num_edges: int, is_directed: bool = Fa
     return G
 
 
-def _power_law_numbers(num_points, sum_total, exponent):
-    pl = powerlaw.Power_Law(parameters=[exponent])
-    numbers = np.round(pl.generate_random(num_points)).astype(int)
-    current_sum = np.sum(numbers)
-    numbers = numbers * (sum_total / current_sum)
-    numbers = np.round(numbers).astype(int)
-    numbers[numbers == 0] = 1
-    return numbers
-
-
-def generic_scale_free_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False,
-                             gamma: float = 2.5) -> \
+def generic_scale_free_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
     """returns a generic scale-free (SF) graph, which satisfies the predefined power-law degree distribution.
 
     Parameters
     ----------
-    num_nodes :
-    num_edges :
-    is_directed :
-    is_weighted :
-    gamma :
+    num_nodes : number of nodes
+    num_edges : number of edges
+    is_directed : return directed graph
+    is_weighted : return graph with random edge weight
 
     Returns
     -------
+    nx.Graph or nx.DiGraph
+
+    Notes
+    --------
+    In this implementation, we ensure that all generated ER networks are connected graph.
 
     """
 
-    # generating power-law degrees of all nodes
-    power_law_degrees = _power_law_numbers(num_nodes, num_edges * 2, gamma)
-    # generating a simple graph with power-law degree distribution
-    G = nx.expected_degree_graph(list(power_law_degrees), selfloops=False)
+    sfpara_theta = 0
+    sfpara_mu = 0.999
+    np.random.seed(None)
+    w = ((np.arange(1, num_nodes + 1) + sfpara_theta) ** -sfpara_mu)
+    ransec = np.cumsum(w)
+
+    # generate generic SF
+    adj = np.zeros((num_nodes, num_nodes))
+    cnt = 0
+
+    while cnt < num_edges:
+        r = np.random.rand() * ransec[-1]
+        i = np.argmax(r <= ransec)
+        r = np.random.rand() * ransec[-1]
+        j = np.argmax(r <= ransec)
+        if i != j and not adj[i, j] and not adj[j, i]:
+            adj[i, j] = 1
+            cnt += 1
+
+    tmpi = adj + adj.T
+    if np.sum(tmpi) != 2 * num_edges:
+        raise ValueError('Check edge sum...')
+    adj = tmpi
+    G = nx.from_numpy_array(adj)
+
+    # check if unconnected
+    if not nx.is_connected(G):
+        G = uncon2con(G, method='attach')
 
     # check if directed
     if is_directed:
@@ -724,15 +748,68 @@ def watts_strogatz_samll_world_graph(num_nodes: int, num_edges: int, is_directed
     return graph
 
 
-def multi_local_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
-        Union[nx.Graph, nx.DiGraph]:
-    pass
-
-
 def extremely_homogeneous_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    """(random graph-based) Extemely-Homogeneous network
+
+    Parameters
+    ----------
+    num_nodes : number of nodes
+    num_edges : number of edges
+    is_directed : return directed graph
+    is_weighted : return graph with random edge weight
+
+    Returns
+    -------
+    nx.Graph or nx.DiGraph
+    """
+
+    adj = nx.adjacency_matrix(erdos_renyi_graph(num_nodes, num_edges, False)).todense()
+    m2 = num_edges * 2
+    ub = np.ceil(m2 / num_nodes)
+    lb = np.floor(m2 / num_nodes)
+    k = np.sum(adj, axis=1)
+
+    while np.max(k) > ub or np.min(k) < lb:
+        idx = np.where(k == np.max(k))[0]
+        jdx = np.where(k == np.min(k))[0]
+        node_i = np.random.choice(idx)
+        node_j = np.random.choice(jdx[jdx != node_i])
+        tmpi = np.where(adj[node_i, :] == 1)[0]
+        v = np.random.choice(tmpi[tmpi != node_j])
+
+        if adj[node_j, v]:
+            continue
+
+        if not adj[node_i, v]:
+            raise ValueError('Check...')
+
+        adj[node_i, v] = 0
+        adj[v, node_i] = 0
+        adj[node_j, v] = 1
+        adj[v, node_j] = 1
+        k = np.sum(adj, axis=1)
+    G = nx.from_numpy_array(adj)
+
+    # check if directed
+    if is_directed:
+        directed_graph = nx.DiGraph()
+        directed_graph.add_nodes_from(G.nodes())
+        for u, v in G.edges():
+            if random.random() < 0.5:
+                directed_graph.add_edge(u, v)
+            else:
+                directed_graph.add_edge(v, u)
+        G = directed_graph.copy()
+
+    # check if weighted
+    if is_weighted:
+        for u, v in G.edges():
+            weight = random.random()
+            G[u][v]['weight'] = weight
+
+    return G
 
 
 def random_hexagon_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
@@ -741,32 +818,6 @@ def random_hexagon_graph(num_nodes: int, num_edges: int, is_directed: bool = Fal
     pass
 
 
-def network_with_degree_distribution(num_nodes: int, avg_degree: int, degree_distribution: str):
-    """
-    Parameters
-    ----------
-    degree_distribution : the network degree distribution
-    num_nodes : number of nodes
-    avg_degree : mean degree
-
-    Returns
-    -------
-    an undirected network with specified degree distribution
-
-    """
-
-    if degree_distribution == "poisson":
-        degree_sequence = np.random.poisson(lam=avg_degree, size=num_nodes)
-    elif degree_distribution == "uniform":
-        degree_sequence = np.random.uniform(avg_degree - 2, avg_degree + 2, size=num_nodes)
-    elif degree_distribution == "normal":
-        degree_sequence = np.random.normal(avg_degree, 1, size=num_nodes)
-    elif degree_distribution == "power-law":
-        degree_sequence = np.random.zipf(2, size=num_nodes)
-    else:
-        raise NotImplementedError
-    degree_sequence = havel_hakimi_process(list(degree_sequence))
-
-    G = nx.havel_hakimi_graph(degree_sequence)
-
-    return G
+def multi_local_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
+        Union[nx.Graph, nx.DiGraph]:
+    pass
