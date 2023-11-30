@@ -13,10 +13,10 @@ __all__ = [
     'q_snapback_graph',
     'generic_scale_free_graph',
     'extremely_homogeneous_graph',
-    'random_hexagon_graph',
     'random_triangle_graph',
     'newman_watts_samll_world_graph',
     'watts_strogatz_samll_world_graph',
+    'random_hexagon_graph',
     'multi_local_world_graph',
 ]
 
@@ -815,9 +815,9 @@ def extremely_homogeneous_graph(num_nodes: int, num_edges: int, is_directed: boo
 def random_hexagon_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[
             nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError
 
 
 def multi_local_world_graph(num_nodes: int, num_edges: int, is_directed: bool = False, is_weighted: bool = False) -> \
         Union[nx.Graph, nx.DiGraph]:
-    pass
+    raise NotImplementedError
