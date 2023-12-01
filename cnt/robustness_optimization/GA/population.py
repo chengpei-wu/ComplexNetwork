@@ -45,10 +45,12 @@ class Population:
         init_size : the initial size of population
 
         """
-        for size in range(init_size):
+        self.add_individual(Individual(deepcopy(init_graph)))
+        for size in range(init_size - 1):
             G = deepcopy(init_graph)
             rewireNum = random.randint(2, self.MaxRewire)
             G = nx.double_edge_swap(G, nswap=rewireNum)
+            assert {d for n, d in init_graph.degree()} == {d for n, d in G.degree()}
             self.add_individual(Individual(G))
 
     def add_individual(self, ind: Individual):
@@ -122,7 +124,8 @@ class Population:
                 G_t = deepcopy(self.individuals[i].g)
                 rewireNum = random.randint(2, self.MaxRewire)
                 G_t = nx.double_edge_swap(G_t, nswap=rewireNum)
-                self.replace_individual(Individual(G_t), i)
+                if {d for n, d in self.individuals[i].g.degree()} == {d for n, d in G_t.degree()}:
+                    self.replace_individual(Individual(G_t), i)
 
     def find_best(self) -> Individual:
         """

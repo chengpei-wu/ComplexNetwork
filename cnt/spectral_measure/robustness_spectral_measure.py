@@ -8,14 +8,14 @@ def spectral_radius(graph: Union[nx.Graph, nx.DiGraph]) -> np.ndarray:
     """
     spectral radius is the largest eigenvalue of graph adjacency matrix
     """
-    return np.max(np.linalg.eigvals(nx.to_numpy_matrix(graph))).real
+    return np.max(np.linalg.eigvals(nx.to_numpy_array(graph))).real
 
 
 def spectral_gap(graph: Union[nx.Graph, nx.DiGraph]) -> np.ndarray:
     """
     spectral gap is the difference of top-2 large eigenvalues of graph adjacency matrix
     """
-    eig_val = np.linalg.eigvals(nx.to_numpy_matrix(graph))
+    eig_val = np.linalg.eigvals(nx.to_numpy_array(graph))
     max_eig_val = np.sort(eig_val)[-1::-1]
     return (max_eig_val[0] - max_eig_val[1]).real
 
@@ -24,7 +24,7 @@ def natural_connectivity(graph: Union[nx.Graph, nx.DiGraph]) -> np.ndarray:
     """
         natural connectivity
     """
-    eig_val = np.linalg.eigvals(nx.to_numpy_matrix(graph))
+    eig_val = np.linalg.eigvals(nx.to_numpy_array(graph))
     return np.log(np.sum(np.exp(eig_val) / graph.number_of_nodes())).real
 
 

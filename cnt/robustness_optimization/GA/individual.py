@@ -29,7 +29,6 @@ class Individual:
     def __init__(self, graph: Union[nx.Graph, nx.DiGraph]):
         self.g = graph
         self.R = self.calculate_robustness(robustness='connectivity', attack='node', strategy='degree')
-        self.EMD = []
         self.fitness = self.R
 
     def calculate_robustness(self, robustness: str, attack: str, strategy: str) -> np.ndarray:

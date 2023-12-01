@@ -1,82 +1,53 @@
 import random
 from copy import deepcopy
-from typing import Union
 
 import networkx as nx
 
 from .individual import Individual
 
 
-def make_crossover(ind1: Individual, ind2: Individual, p_cross: float) -> Union[nx.Graph, nx.DiGraph]:
-    """
-
-    Parameters
-    ----------
-    ind1 : individual 1
-    ind2 : individual 2
-    p_cross : the possibility of cross
-
-    Returns
-    -------
-    the new crossed graph
-    """
-    g1 = deepcopy(ind1.g)
-    g2 = deepcopy(ind2.g)
-    N = g1.number_of_nodes()
-    deg_ori = []
-    for i in range(N):
-        deg_ori.append(g1.degree[i])
-    for lab in range(N):
-        cross_flag = 1
+def make_crossover(ind1: Individual, ind2: Individual, p_cross: float):
+    G1 = deepcopy(ind1.g)
+    G2 = deepcopy(ind2.g)
+    for node_i in G1.nodes:
         if random.random() <= p_cross:
-            diff2y_1n = list(set(g2[lab]).difference(set(g1[lab])))  # Found in g2 but not in g1
-            diff1y_2n = list(set(g1[lab]).difference(set(g2[lab])))  # Found in g1 but not in g2
-            if len(diff2y_1n) == 0 or len(diff1y_2n) == 0:
+            unique_neighbors_g1 = list(set(nx.neighbors(G1, node_i)).difference(set(nx.neighbors(G2, node_i))))
+            unique_neighbors_g2 = list(set(nx.neighbors(G2, node_i)).difference(set(nx.neighbors(G1, node_i))))
+
+            if len(unique_neighbors_g1) == 0 or len(unique_neighbors_g2) == 0:
                 continue
-            random.shuffle(diff2y_1n)  # shuffle
-            random.shuffle(diff1y_2n)
-            node_1 = diff2y_1n[0]  # add in g1 but del in g2
-            node_2 = diff1y_2n[0]  # add in g2 but del in g1
-            flag = 0
-            node3in1 = []
-            node3in2 = []
-            for i in g1[node_1]:
-                if node_2 not in g1[i]:
-                    node3in1.append(i)
-            for i in g2[node_2]:
-                if node_1 not in g2[i]:
-                    node3in2.append(i)
-            if len(node3in1) == 0:
-                continue
-            random.shuffle(node3in1)
-            g1.remove_edge(node_2, lab)
-            g1.add_edge(node_1, lab)
-            if node_2 == node3in1[0]:
-                continue
-            g1.remove_edge(node_1, node3in1[0])
-            g1.add_edge(node_2, node3in1[0])
-            for i in range(N):
-                if deg_ori[i] != g1.degree[i]:
-                    cross_flag = 0
-            if cross_flag == 0:
-                g1 = deepcopy(ind1.g)
-            if len(node3in2) == 0:
-                continue
-            random.shuffle(node3in2)
-            g2.remove_edge(node_1, lab)
-            g2.add_edge(node_2, lab)
-            if (node_2, node3in2[0]) in g2.edges():
-                g2.remove_edge(node_2, node3in2[0])
-            if node_1 == node3in2[0]:
-                continue
-            g2.add_edge(node_1, node3in2[0])
-            for i in range(N):
-                if deg_ori[i] != g2.degree[i]:
-                    cross_flag = 0
-            if cross_flag == 0:
-                g2 = deepcopy(ind2.g)
+
+            for node_j in unique_neighbors_g1:
+                if len(unique_neighbors_g2) == 0:
+                    break
+
+                node_k = random.choice(unique_neighbors_g2)
+
+                node_ls = nx.neighbors(G1, node_k)
+
+                for l in node_ls:
+                    if l != node_k != node_i != node_j and G1.has_edge(l, node_k) and not G1.has_edge(l, node_j) \
+                            and G1.has_edge(node_i, node_j) and not G1.has_edge(node_i, node_k):
+                        node_l = l
+                        G1.remove_edge(node_l, node_k)
+                        G1.add_edge(node_l, node_j)
+                        G1.remove_edge(node_i, node_j)
+                        G1.add_edge(node_i, node_k)
+                        break
+
+                node_ms = nx.neighbors(G2, node_j)
+                for m in node_ms:
+                    if m != node_j != node_i != node_k and G2.has_edge(m, node_j) and not G2.has_edge(m, node_k) \
+                            and G2.has_edge(node_i, node_k) and not G2.has_edge(node_i, node_j):
+                        node_m = m
+                        G2.remove_edge(node_m, node_j)
+                        G2.add_edge(node_m, node_k)
+                        G2.remove_edge(node_i, node_k)
+                        G2.add_edge(node_i, node_j)
+                        break
+                unique_neighbors_g2.remove(node_k)
     if random.random() <= 0.5:
-        g_get = deepcopy(g1)
+        g_get = deepcopy(G1)
     else:
-        g_get = deepcopy(g2)
+        g_get = deepcopy(G2)
     return g_get
