@@ -150,6 +150,10 @@ class Population:
         -------
 
         """
+        for ind in self.individuals:
+            if not ind.fitness:
+                ind.fitness = ind.calculate_robustness(robustness='connectivity', attack='node', strategy='degree')
+                ind.R = ind.fitness
         sorted_individuals = sorted(self.individuals, key=lambda obj: obj.fitness, reverse=True)
         self.individuals = sorted_individuals[:self.init_size]
         self.pop_size = self.init_size

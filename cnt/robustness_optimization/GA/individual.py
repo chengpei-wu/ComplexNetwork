@@ -28,8 +28,8 @@ def get_degree_distribution(graph: Union[nx.Graph, nx.DiGraph]) -> list:
 class Individual:
     def __init__(self, graph: Union[nx.Graph, nx.DiGraph]):
         self.g = graph
-        self.R = self.calculate_robustness(robustness='connectivity', attack='node', strategy='degree')
-        self.fitness = self.R
+        self.R = None
+        self.fitness = None
 
     def calculate_robustness(self, robustness: str, attack: str, strategy: str) -> np.ndarray:
         """

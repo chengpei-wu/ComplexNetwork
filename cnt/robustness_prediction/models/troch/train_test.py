@@ -11,7 +11,6 @@ from torch.utils.data import DataLoader
 from cnt.robustness_prediction.models.troch.CNN_SPP import CNN_SPP
 from cnt.robustness_prediction.models.troch.utils_cnn import collate_cnn
 from cnt.robustness_prediction.models.troch.utils_gnn import collate_gnn, collate_gnn_multi
-from cnt.utils.tool_functions import print_progress
 
 
 def train_cnn(
@@ -67,7 +66,6 @@ def train_cnn(
         model.train()
         total_loss = 0
         for batch, (batched_graph, robustness) in enumerate(train_loader):
-            print_progress(batch, train_data_number // batch_size, prefix=f'Epoch {epoch}: ')
             batched_graph = batched_graph.to(device)
             robustness = robustness.to(device)
             logits = model(batched_graph)
