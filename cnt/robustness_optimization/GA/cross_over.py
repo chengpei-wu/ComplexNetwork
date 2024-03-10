@@ -26,7 +26,7 @@ def make_crossover(ind1: Individual, ind2: Individual, p_cross: float):
                 node_ls = nx.neighbors(G1, node_k)
 
                 for l in node_ls:
-                    if l != node_k != node_i != node_j and G1.has_edge(l, node_k) and not G1.has_edge(l, node_j) \
+                    if l != node_k and l != node_i and l != node_j and G1.has_edge(l, node_k) and not G1.has_edge(l, node_j) \
                             and G1.has_edge(node_i, node_j) and not G1.has_edge(node_i, node_k):
                         node_l = l
                         G1.remove_edge(node_l, node_k)
@@ -37,7 +37,7 @@ def make_crossover(ind1: Individual, ind2: Individual, p_cross: float):
 
                 node_ms = nx.neighbors(G2, node_j)
                 for m in node_ms:
-                    if m != node_j != node_i != node_k and G2.has_edge(m, node_j) and not G2.has_edge(m, node_k) \
+                    if m != node_j and m != node_i and m != node_k and G2.has_edge(m, node_j) and not G2.has_edge(m, node_k) \
                             and G2.has_edge(node_i, node_k) and not G2.has_edge(node_i, node_j):
                         node_m = m
                         G2.remove_edge(node_m, node_j)
