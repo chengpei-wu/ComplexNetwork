@@ -32,7 +32,7 @@ def adj_sort(adj: np.ndarray):
     using node degree rank, top to bottom
 
     """
-    G = nx.from_numpy_matrix(adj)
+    G = nx.from_numpy_array(adj)
     degrees = list(nx.degree(G))
     rank_degree = sorted(degrees, key=lambda x: x[1], reverse=True)
     rank_id = [i[0] for i in rank_degree]
@@ -65,9 +65,9 @@ def random_sampling(adj: np.ndarray, fixed_size: int):
     isd = 0
     size = len(adj)
     if isd:
-        G = nx.from_numpy_matrix(adj, create_using=nx.DiGraph)
+        G = nx.from_numpy_array(adj, create_using=nx.DiGraph)
     else:
-        G = nx.from_numpy_matrix(adj)
+        G = nx.from_numpy_array(adj)
     if size < fixed_size:
         n = fixed_size - size
         while n:

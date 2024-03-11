@@ -27,9 +27,9 @@ def missing_edges(adj, strategy, rate):
 
 def remove_random_edges(adj, rate, isd):
     if isd:
-        G = nx.from_numpy_matrix(adj, create_using=nx.DiGraph)
+        G = nx.from_numpy_array(adj, create_using=nx.DiGraph)
     else:
-        G = nx.from_numpy_matrix(adj)
+        G = nx.from_numpy_array(adj)
     number_rm_edges = round(rate * G.number_of_edges())
     for i in range(number_rm_edges):
         all_edges = G.edges()
@@ -42,9 +42,9 @@ def remove_random_edges(adj, rate, isd):
 
 def remove_random_nodes(adj, rate, isd):
     if isd:
-        G = nx.from_numpy_matrix(adj, create_using=nx.DiGraph)
+        G = nx.from_numpy_array(adj, create_using=nx.DiGraph)
     else:
-        G = nx.from_numpy_matrix(adj)
+        G = nx.from_numpy_array(adj)
     number_rm_nodes = round(rate * len(adj))
     for i in range(number_rm_nodes):
         rm_id = random.randint(0, G.number_of_nodes() - 1)

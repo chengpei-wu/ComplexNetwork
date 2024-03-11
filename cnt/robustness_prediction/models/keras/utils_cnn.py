@@ -99,9 +99,9 @@ def fix_adj_size(adj, fixed_size):
     isd = 0
     size = len(adj)
     if isd:
-        G = nx.from_numpy_matrix(adj, create_using=nx.DiGraph)
+        G = nx.from_numpy_array(adj, create_using=nx.DiGraph)
     else:
-        G = nx.from_numpy_matrix(adj)
+        G = nx.from_numpy_array(adj)
     if size < fixed_size:
         n = fixed_size - size
         while n:

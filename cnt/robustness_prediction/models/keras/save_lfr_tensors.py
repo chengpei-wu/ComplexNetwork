@@ -21,9 +21,9 @@ def get_lfr_tensors(data_path, w, save_path):
         for j in tqdm(range(len_instance), desc=f'saving lfr embeddings: '):
             adj = networks[i, j]['adj'][0, 0].todense()
             if isd:
-                G = nx.from_numpy_matrix(adj, create_using=nx.DiGraph())
+                G = nx.from_numpy_array(adj, create_using=nx.DiGraph())
             else:
-                G = nx.from_numpy_matrix(adj, create_using=nx.Graph())
+                G = nx.from_numpy_array(adj, create_using=nx.Graph())
             embed = LFR(G, w=w)
             embed.train()
             tensors.append(embed.get_embeddings())
